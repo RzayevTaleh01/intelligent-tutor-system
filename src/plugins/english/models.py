@@ -22,20 +22,23 @@ class LessonModel(BaseModel):
     level: EnglishLevel
     tags: List[str]
     text: str
+    items: Optional[List[Dict[str, Any]]] = None
 
 class LearningItem(BaseModel):
     id: str
-    type: ItemType
-    prompt: str
-    expected_answer: Optional[str] = None
-    choices: Optional[List[str]] = None
-    rubric: Optional[Dict[str, Any]] = None
-    difficulty: float = Field(ge=1, le=5)
-    skill_tag: str
+    type: str # Simplified from Enum to str for flexibility
+    question: str = Field(alias="prompt") # Map prompt to question
+    correct_answer: Optional[str] = Field(None, alias="expected_answer")
+    options: Optional[List[str]] = Field(None, alias="choices")
+    difficulty: float = 0.5
+    skill_tag: str = "general"
 
-class GradeResultModel(BaseModel):
+    class Config:
+        populate_by_name = True
+
+class GradeResult(BaseModel):
     score: float
-    errors: List[str]
     feedback_short: str
-    feedback_long: str
-    suggested_next_difficulty: float
+    error_codes: List[str] = []
+    feedback_long: Optional[str] = None
+

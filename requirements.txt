@@ -1,15 +1,30 @@
+# Core
 fastapi
-uvicorn
+uvicorn[standard]
 sqlalchemy
+asyncpg
 pydantic
 pydantic-settings
-python-dotenv
 httpx
-asyncpg
-pytest
-pytest-asyncio
 python-multipart
-faster-whisper
-soundfile
+python-jose[cryptography]
+passlib[bcrypt]
+bcrypt
+
+# LLM & AI
+sentence-transformers
 numpy
-# piper-tts  # Commented out as it often requires specific system deps/wheels. We will assume binary or manual install.
+scikit-learn
+
+# Voice
+faster-whisper
+numpy
+soundfile
+
+# Knowledge
+pypdf
+networkx
+
+# Other
+aiofiles
+requests

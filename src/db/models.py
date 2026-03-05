@@ -1,51 +1,47 @@
-from datetime import datetime
-from typing import Optional, List
-from sqlalchemy import String, Float, ForeignKey, Text, JSON, DateTime
-from sqlalchemy.orm import Mapped, mapped_column, relationship
-from src.db.session import Base
+from sqlalchemy import Column, String, Integer, Float, ForeignKey, DateTime, JSON, Text, func
+from sqlalchemy.orm import relationship
+from src.db.base import Base
+from src.db.models_knowledge import KnowledgeSource, KnowledgeChunk, KnowledgeEmbedding, KnowledgeTopic, KnowledgeEdge
+from src.db.models_adaptive import LearnerSkill, LearnerSchedule, LearnerError, AnalyticsEvent
+from src.db.models_diagnostics import LearnerTheta, LearnerThetaSkill, SkillDifficulty, BanditArm, ExperimentAssignment, ConceptNode, ConceptEdge
+from src.db.models_prod import Tenant, User, Job
 
 class Session(Base):
     __tablename__ = "sessions"
-
-    id: Mapped[str] = mapped_column(String, primary_key=True, index=True)
-    created_at: Mapped[datetime] = mapped_column(DateTime, default=datetime.utcnow)
+    id = Column(String, primary_key=True)
+    tenant_id = Column(String, ForeignKey("tenants.id"), nullable=True) # Added for v2
+    user_id = Column(Integer, ForeignKey("users.id"), nullable=True) # Added for v2
+    created_at = Column(DateTime(timezone=True), server_default=func.now())
     
-    # Relationships
-    messages: Mapped[List["Message"]] = relationship(back_populates="session", cascade="all, delete-orphan")
-    events: Mapped[List["Event"]] = relationship(back_populates="session", cascade="all, delete-orphan")
-    learner_state: Mapped["LearnerState"] = relationship(back_populates="session", uselist=False, cascade="all, delete-orphan")
+    skills = relationship("LearnerSkill", backref="session", cascade="all, delete-orphan")
+    schedule = relationship("LearnerSchedule", backref="session", cascade="all, delete-orphan")
+    errors = relationship("LearnerError", backref="session", cascade="all, delete-orphan")
+    analytics = relationship("AnalyticsEvent", backref="session", cascade="all, delete-orphan")
+    
+    # Diagnostics
+    theta = relationship("LearnerTheta", uselist=False, backref="session", cascade="all, delete-orphan")
+    theta_skills = relationship("LearnerThetaSkill", backref="session", cascade="all, delete-orphan")
+    experiment = relationship("ExperimentAssignment", uselist=False, backref="session", cascade="all, delete-orphan")
 
 class Message(Base):
     __tablename__ = "messages"
+    id = Column(Integer, primary_key=True, autoincrement=True)
+    session_id = Column(String, ForeignKey("sessions.id"))
+    role = Column(String)
+    content = Column(Text)
+    created_at = Column(DateTime(timezone=True), server_default=func.now())
 
-    id: Mapped[int] = mapped_column(primary_key=True, autoincrement=True)
-    session_id: Mapped[str] = mapped_column(ForeignKey("sessions.id"))
-    role: Mapped[str] = mapped_column(String)  # user, assistant, system
-    content: Mapped[str] = mapped_column(Text)
-    created_at: Mapped[datetime] = mapped_column(DateTime, default=datetime.utcnow)
-    
-    session: Mapped["Session"] = relationship(back_populates="messages")
+class LearnerState(Base):
+    __tablename__ = "learner_states"
+    session_id = Column(String, ForeignKey("sessions.id"), primary_key=True)
+    mastery_score = Column(Float, default=0.5)
+    readiness_score = Column(Float, default=0.5)
+    recent_errors = Column(JSON, default=list)
 
 class Event(Base):
     __tablename__ = "events"
-
-    id: Mapped[int] = mapped_column(primary_key=True, autoincrement=True)
-    session_id: Mapped[str] = mapped_column(ForeignKey("sessions.id"))
-    event_type: Mapped[str] = mapped_column(String) # assessment, pedagogical_decision, error
-    details: Mapped[dict] = mapped_column(JSON)
-    created_at: Mapped[datetime] = mapped_column(DateTime, default=datetime.utcnow)
-
-    session: Mapped["Session"] = relationship(back_populates="events")
-
-class LearnerState(Base):
-    __tablename__ = "learner_state"
-
-    id: Mapped[int] = mapped_column(primary_key=True, autoincrement=True)
-    session_id: Mapped[str] = mapped_column(ForeignKey("sessions.id"), unique=True)
-    
-    mastery_score: Mapped[float] = mapped_column(Float, default=0.5)
-    readiness_score: Mapped[float] = mapped_column(Float, default=0.5)
-    recent_errors: Mapped[dict] = mapped_column(JSON, default=list) # Storing list of strings as JSON
-    current_topic: Mapped[Optional[str]] = mapped_column(String, nullable=True)
-    
-    session: Mapped["Session"] = relationship(back_populates="learner_state")
+    id = Column(Integer, primary_key=True, autoincrement=True)
+    session_id = Column(String, ForeignKey("sessions.id"))
+    event_type = Column(String)
+    details = Column(JSON)
+    created_at = Column(DateTime(timezone=True), server_default=func.now())
