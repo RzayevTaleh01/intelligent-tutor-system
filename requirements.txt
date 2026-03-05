@@ -1,0 +1,15 @@
+fastapi
+uvicorn
+sqlalchemy
+pydantic
+pydantic-settings
+python-dotenv
+httpx
+asyncpg
+pytest
+pytest-asyncio
+python-multipart
+faster-whisper
+soundfile
+numpy
+# piper-tts  # Commented out as it often requires specific system deps/wheels. We will assume binary or manual install.
