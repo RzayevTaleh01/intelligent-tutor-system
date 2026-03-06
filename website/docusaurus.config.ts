@@ -16,15 +16,15 @@ const config: Config = {
 
   
   // Set the production url of your site here
-  url: 'https://eduvision.github.io', 
+  url: 'https://RzayevTaleh01.github.io', 
   // Set the /<baseUrl>/ pathname under which your site is served
   // For GitHub pages deployment, it is often '/<projectName>/'
-  baseUrl: '/its/', 
+  baseUrl: '/intelligent-tutor-system/', 
 
   // GitHub pages deployment config.
   // If you aren't using GitHub pages, you don't need these.
-  organizationName: 'eduvision', // Usually your GitHub org/user name.
-  projectName: 'its', // Usually your repo name.
+  organizationName: 'RzayevTaleh01', // Usually your GitHub org/user name.
+  projectName: 'intelligent-tutor-system', // Usually your repo name.
 
   onBrokenLinks: 'warn', 
   onBrokenMarkdownLinks: 'warn',
