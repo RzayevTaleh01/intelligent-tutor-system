@@ -210,8 +210,9 @@ async def chat(
     error_tracker = ErrorTracker(db)
     top_errors = await error_tracker.get_top_errors(session_id)
     
+    course_id = session.course_id or "default"
     plan = await pedagogy_engine.determine_next_step_async(
-        db, session_id, state, recent_errors=top_errors
+        db, session_id, state, recent_errors=top_errors, course_id=course_id
     )
     
     # 3. Content from Plugin (Dynamic)

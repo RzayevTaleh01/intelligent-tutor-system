@@ -21,7 +21,8 @@ class PedagogyEngine:
         session_id: str,
         state: LearnerState, 
         learner_skills: List[Dict[str, Any]] = [], 
-        recent_errors: List[Dict[str, Any]] = []
+        recent_errors: List[Dict[str, Any]] = [],
+        course_id: str = "default"
     ) -> Dict[str, Any]:
         """
         Async version with full Cognitive Diagnostics + Bandit + A/B
@@ -57,8 +58,9 @@ class PedagogyEngine:
             weak_skill = diag_report["weakest_skills"][0]["skill"]
             candidates.append({"skill_tag": weak_skill, "item_type": "mcq", "difficulty": 1, "source": "diagnostics"})
             
-        # Default Candidate
-        candidates.append({"skill_tag": "general_english", "item_type": "mixed", "difficulty": int(state.readiness_score * 4) + 1, "source": "default"})
+        # Default Candidate (Dynamic based on Course)
+        default_skill = f"general_{course_id}" if course_id != "default" else "general_knowledge"
+        candidates.append({"skill_tag": default_skill, "item_type": "mixed", "difficulty": int(state.readiness_score * 4) + 1, "source": "default"})
         
         # 5. Select Action
         if variant == "B":
