@@ -1,6 +1,12 @@
 # ITS - Intelligent Tutoring System
 
-**ITS (Intelligent Tutoring System)** is a comprehensive, adaptive educational ecosystem designed to simulate a one-on-one tutoring experience. Unlike static learning platforms or simple API wrappers, ITS features a **custom-built, trainable AI model** at its core. This proprietary model is fine-tuned on educational datasets to master pedagogical strategies, ensuring content, strategy, and feedback are dynamically tailored to each learner's unique needs.
+**ITS (Intelligent Tutoring System)** is a comprehensive, adaptive educational ecosystem designed to simulate a one-on-one tutoring experience.
+
+## 🤖 AI Model & Technology
+At the core of ITS lies a **custom-built, trainable AI model**. Unlike generic wrappers, this system utilizes a fine-tuned version of **Llama 3.1 (8B)**, optimized specifically for pedagogical dialogue and educational scaffolding.
+- **Model:** Llama 3.1 8B (Fine-tuned on educational datasets)
+- **Embedding:** sentence-transformers/all-MiniLM-L6-v2 (for RAG and Knowledge Graph)
+- **Architecture:** Hybrid Neuro-Symbolic (combines LLM generation with structured Knowledge Graphs)
 
 The system empowers **Teachers** to upload raw materials (Lessons, Challenges, Rubrics), which the system's "Brain" then processes to drive an adaptive learning journey for the **Student**.
 
@@ -10,7 +16,7 @@ The system empowers **Teachers** to upload raw materials (Lessons, Challenges, R
 
 The system is built around five interacting intelligent engines that work together to deliver personalized education.
 
-![alt text](image-1.png)
+![alt text](image.png)
 
 ### System Architecture Diagram
 
@@ -26,8 +32,8 @@ graph TD
         direction TB
         KE[🗂️ Knowledge Engine]
         PE[🧠 Pedagogy Engine]
-        LE[� Learner Engine]
-        TE[� Tutor Engine]
+        LE[📈 Learner Engine]
+        TE[💬 Tutor Engine]
         AE[✅ Assessment Engine]
 
         Materials -->|Ingest| KE
@@ -39,7 +45,7 @@ graph TD
 
     subgraph "Domain Layer"
         PluginInterface[[🔌 Plugin Interface]]
-        Subjects[📚 Subject Plugins<br/>(Python, Math, History...)]
+        Subjects["📚 Subject Plugins<br/>(Python, Math, History...)"]
         PluginInterface --- Subjects
     end
 

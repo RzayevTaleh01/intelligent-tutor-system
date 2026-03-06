@@ -1,6 +1,12 @@
 # ITS - Intelligent Tutoring System
 
-**ITS (Intelligent Tutoring System - İntellektual Tədris Sistemi)**, fərdi tədris təcrübəsini simulyasiya etmək üçün dizayn edilmiş hərtərəfli, adaptiv bir təhsil ekosistemidir. Sadə API inteqrasiyalarından fərqli olaraq, ITS-in nüvəsində **xüsusi olaraq hazırlanmış və təlimləndirilən AI modeli** dayanır. Bu model, pedaqoji strategiyaları mənimsəmək üçün təhsil verilənləri əsasında incə-tənzimlənmişdir (fine-tuned) və məzmunu, strategiyanı, rəyləri hər bir tələbənin unikal ehtiyaclarına uyğunlaşdırır.
+**ITS (Intelligent Tutoring System - İntellektual Tədris Sistemi)**, fərdi tədris təcrübəsini simulyasiya etmək üçün dizayn edilmiş hərtərəfli, adaptiv bir təhsil ekosistemidir.
+
+## 🤖 AI Model və Texnologiya
+ITS-in nüvəsində **xüsusi olaraq hazırlanmış və təlimləndirilən AI modeli** dayanır. Sadə API qabıqlarından (wrappers) fərqli olaraq, bu sistem pedaqoji dialoq və tədris dəstəyi üçün optimallaşdırılmış **Llama 3.1 (8B)** modelinin incə-tənzimlənmiş (fine-tuned) versiyasından istifadə edir.
+- **Model:** Llama 3.1 8B (Təhsil verilənləri üzərində fine-tune olunub)
+- **Embedding:** sentence-transformers/all-MiniLM-L6-v2 (RAG və Bilik Qrafı üçün)
+- **Memarlıq:** Hibrid Neyro-Simvolik (LLM generasiyasını strukturlaşdırılmış Bilik Qrafları ilə birləşdirir)
 
 Sistem **Müəllimlərə** materialları (Dərslər, Tapşırıqlar, Meyarlar) yükləmək imkanı verir, sistemin "Beyni" isə bu materialları emal edərək **Tələbə** üçün adaptiv öyrənmə səyahətini idarə edir.
 
@@ -39,7 +45,7 @@ graph TD
 
     subgraph "Domen Təbəqəsi"
         PluginInterface[[🔌 Plugin İnterfeysi]]
-        Subjects[📚 Fənn Pluginləri<br/>(Python, Riyaziyyat, Tarix...)]
+        Subjects["📚 Fənn Pluginləri<br/>(Python, Riyaziyyat, Tarix...)"]
         PluginInterface --- Subjects
     end
 
