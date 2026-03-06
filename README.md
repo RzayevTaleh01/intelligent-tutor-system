@@ -2,44 +2,8 @@
 
 **ITS (Intelligent Tutoring System)** is a comprehensive, adaptive educational ecosystem designed to simulate a one-on-one tutoring experience.
 
----
 
-## 📅 Version History & Changelog
-
-<details open>
-<summary><strong>🚀 v2.1: Cognitive Intelligence Update (Current)</strong></summary>
-
-*   **🧠 Pedagogy Engine Upgrade:**
-    *   Added **Socratic Method** (Guided questioning for advanced learners).
-    *   Added **Feynman Technique** (Conceptual gap diagnosis).
-    *   Added **Scaffolding** (Step-by-step breakdown for stuck students).
-*   **✅ Assessment Engine Upgrade:**
-    *   Implemented **AI Grading** using Llama 3.1.
-    *   Provides detailed JSON feedback with scores (accuracy, relevance, depth).
-*   **🧪 Verification:** Added specific test scripts for Pedagogy strategies and Assessment logic.
-</details>
-
-<details>
-<summary><strong>🏗️ v2.0: Core Architecture Overhaul</strong></summary>
-
-*   **5-Engine Architecture:** Defined the core interaction between Knowledge, Pedagogy, Tutor, Learner, and Assessment engines.
-*   **RAG Integration:** Implemented Knowledge Graph and Vector Search for dynamic content retrieval.
-*   **Plugin System:** Created `GenericPlugin` to allow any subject material to be taught without code changes.
-*   **Dockerization:** Full container support for Database, API, and LLM services.
-</details>
-
-<details>
-<summary><strong>🌱 v1.0: Initial Prototype</strong></summary>
-
-*   Basic Chat Interface.
-*   Simple Authentication (JWT).
-*   Static Rule-based responses.
-*   Proof of Concept for ITS.
-</details>
-
----
-
-## 🤖 AI Model & Technology
+## AI Model & Technology
 At the core of ITS lies a **custom-built, trainable AI model**. Unlike generic wrappers, this system utilizes a fine-tuned version of **Llama 3.1 (8B)**, optimized specifically for pedagogical dialogue and educational scaffolding.
 - **Model:** Llama 3.1 8B (Fine-tuned on educational datasets)
 - **Embedding:** sentence-transformers/all-MiniLM-L6-v2 (for RAG and Knowledge Graph)
@@ -49,7 +13,7 @@ The system empowers **Teachers** to upload raw materials (Lessons, Challenges, R
 
 ---
 
-## 🏗️ Architecture & Core Engines
+## Architecture & Core Engines
 
 The system is built around five interacting intelligent engines that work together to deliver personalized education.
 
@@ -100,7 +64,7 @@ graph TD
 
 ---
 
-## 🧩 Engine Descriptions
+## Engine Descriptions
 
 1.  **🗂️ Knowledge Engine**
     *   **Role:** The librarian and map-maker.
@@ -128,7 +92,7 @@ graph TD
 
 ---
 
-## 🚀 Key Features
+## Key Features
 
 ### 1. Dynamic Course Creation
 Courses are created dynamically via API. The **Domain Plugin Layer** ensures the system can switch "brains" instantly:
@@ -140,7 +104,7 @@ This module acts as the default adapter for new subjects. It uses the **Knowledg
 
 ---
 
-## 🛠️ How to Run
+## How to Run
 
 ### 1. Start the System
 Use Docker to launch the entire stack (DB, API, AI):
@@ -149,18 +113,7 @@ Use Docker to launch the entire stack (DB, API, AI):
 docker-compose up -d --build
 ```
 
-### 2. Verify System (Automated)
-Run the verification script to simulate a full usage cycle:
-1. Registers a Teacher.
-2. Creates a "Python 101" course.
-3. Uploads course materials (simulation).
-4. Logs in as a Student and asks a question.
-
-```bash
-python scripts/verify_trainable.py
-```
-
-### 3. Manual API Usage (Swagger UI)
+### 2. Manual API Usage (Swagger UI)
 Access the interactive API documentation at `http://localhost:8000/docs`.
 
 1. **Authorize** (Login).
@@ -168,3 +121,41 @@ Access the interactive API documentation at `http://localhost:8000/docs`.
 3. `POST /courses/{id}/upload` -> Upload learning materials.
 4. `POST /sessions/` -> Start a session with the Course ID.
 5. `POST /chat/` -> Interact with the AI Tutor.
+
+---
+
+## Version History & Changelog
+
+<details open>
+<summary><strong>🚀 v2.1: Cognitive Intelligence Update (Current)</strong></summary>
+
+*   **🧠 Pedagogy Engine Upgrade:**
+    *   Added **Socratic Method** (Guided questioning for advanced learners).
+    *   Added **Feynman Technique** (Conceptual gap diagnosis).
+    *   Added **Scaffolding** (Step-by-step breakdown for stuck students).
+*   **✅ Assessment Engine Upgrade:**
+    *   Implemented **AI Grading** using Llama 3.1.
+    *   Provides detailed JSON feedback with scores (accuracy, relevance, depth).
+*   **🧪 Verification:** Added specific test scripts for Pedagogy strategies and Assessment logic.
+</details>
+
+<details>
+<summary><strong>🏗️ v2.0: Core Architecture Overhaul</strong></summary>
+
+*   **5-Engine Architecture:** Defined the core interaction between Knowledge, Pedagogy, Tutor, Learner, and Assessment engines.
+*   **RAG Integration:** Implemented Knowledge Graph and Vector Search for dynamic content retrieval.
+*   **Plugin System:** Created `GenericPlugin` to allow any subject material to be taught without code changes.
+*   **Dockerization:** Full container support for Database, API, and LLM services.
+</details>
+
+<details>
+<summary><strong>🌱 v1.0: Initial Prototype</strong></summary>
+
+*   Basic Chat Interface.
+*   Simple Authentication (JWT).
+*   Static Rule-based responses.
+*   Proof of Concept for ITS.
+</details>
+
+---
+
