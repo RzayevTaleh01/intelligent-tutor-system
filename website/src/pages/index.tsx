@@ -1,4 +1,3 @@
-import type {ReactNode} from 'react';
 import clsx from 'clsx';
 import Link from '@docusaurus/Link';
 import useDocusaurusContext from '@docusaurus/useDocusaurusContext';
@@ -21,7 +20,7 @@ function HomepageHeader() {
           <Link
             className="button button--secondary button--lg"
             to="/docs/intro">
-            Docusaurus Tutorial - 5min ⏱️
+            Read the Whitepaper 📄
           </Link>
         </div>
       </div>
@@ -29,14 +28,24 @@ function HomepageHeader() {
   );
 }
 
-export default function Home(): ReactNode {
+export default function Home(): JSX.Element {
   const {siteConfig} = useDocusaurusContext();
   return (
     <Layout
-      title={`Hello from ${siteConfig.title}`}
-      description="Description will go into a meta tag in <head />">
+      title={`Welcome to ${siteConfig.title}`}
+      description="Next-Generation Intelligent Tutoring System driven by Neuro-Symbolic AI and Cognitive Modeling">
       <HomepageHeader />
       <main>
+        <div className="container padding-vert--xl">
+          <div className="row">
+            <div className="col col--8 col--offset-2 text--center">
+              <h2>A Paradigm Shift in Adaptive Education</h2>
+              <p className="text--lg">
+                EduVision ITS represents a novel approach to personalized learning, moving beyond static rule-based systems to a fully dynamic, cognitive architecture. By synthesizing <strong>Bayesian Knowledge Tracing (BKT)</strong>, <strong>Spaced Repetition Systems (SRS)</strong>, and <strong>Large Language Models (LLMs)</strong>, we create a digital tutor that truly understands the learner.
+              </p>
+            </div>
+          </div>
+        </div>
         <HomepageFeatures />
       </main>
     </Layout>

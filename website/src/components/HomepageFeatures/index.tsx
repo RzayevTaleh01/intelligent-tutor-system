@@ -11,32 +11,32 @@ type FeatureItem = {
 
 const FeatureList: FeatureItem[] = [
   {
-    title: 'Easy to Use',
+    title: 'Cognitive Modeling (BKT)',
     Svg: require('@site/static/img/undraw_docusaurus_mountain.svg').default,
     description: (
       <>
-        Docusaurus was designed from the ground up to be easily installed and
-        used to get your website up and running quickly.
+        Utilizes <strong>Bayesian Knowledge Tracing</strong> to probabilistically estimate student mastery. 
+        The system differentiates between slips, guesses, and true learning, ensuring that the difficulty curve adapts in real-time.
       </>
     ),
   },
   {
-    title: 'Focus on What Matters',
+    title: 'Neuro-Symbolic Architecture',
     Svg: require('@site/static/img/undraw_docusaurus_tree.svg').default,
     description: (
       <>
-        Docusaurus lets you focus on your docs, and we&apos;ll do the chores. Go
-        ahead and move your docs into the <code>docs</code> directory.
+        Combines the generative power of <strong>LLMs (Llama 3.1)</strong> with the structured precision of <strong>Knowledge Graphs</strong>.
+        This ensures pedagogical accuracy while maintaining natural, empathetic dialogue.
       </>
     ),
   },
   {
-    title: 'Powered by React',
+    title: 'Spaced Repetition (SRS)',
     Svg: require('@site/static/img/undraw_docusaurus_react.svg').default,
     description: (
       <>
-        Extend or customize your website layout by reusing React. Docusaurus can
-        be extended while reusing the same header and footer.
+        Implements the <strong>Ebbinghaus Forgetting Curve</strong> to schedule reviews at optimal intervals.
+        The system predicts memory decay and reinforces concepts exactly when the student is about to forget them.
       </>
     ),
   },
