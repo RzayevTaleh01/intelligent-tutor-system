@@ -10,10 +10,10 @@ BKT is a mathematical model used to estimate the probability that a student has 
 
 **How it works:**
 Every time a student attempts a question (e.g., "Python Loops"), the system updates four probabilities:
-*   $P(L_{t})$: Probability the skill is already known.
-*   $P(T)$: Probability of learning the skill during the step.
-*   $P(G)$: Probability of guessing correctly (Guess).
-*   $P(S)$: Probability of making a mistake despite knowing the skill (Slip).
+*   P(L): Probability the skill is already known.
+*   P(T): Probability of learning the skill during the step.
+*   P(G): Probability of guessing correctly (Guess).
+*   P(S): Probability of making a mistake despite knowing the skill (Slip).
 
 **Code Reference:** `src/core/adaptive/bkt.py`
 
@@ -32,7 +32,7 @@ To prevent students from forgetting what they've learned, we use a modified **SM
 1.  **Student Attempt:** Student submits an answer to `/attempt`.
 2.  **Assessment:** The Assessment Engine grades it (0.0 to 1.0).
 3.  **Learner Update:** The Learner Engine receives the score and triggers:
-    *   **BKT Update:** Calculates new mastery probability ($P_{new}$).
+    *   **BKT Update:** Calculates new mastery probability (P_new).
     *   **SRS Update:** Calculates next review date (`next_review`).
     *   **Global State:** Updates overall course `readiness_score`.
 4.  **Database:** All new values are saved to `learner_skills` and `learner_schedules` tables.
