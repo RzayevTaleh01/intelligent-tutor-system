@@ -28,6 +28,17 @@ const sidebars: SidebarsConfig = {
         'architecture/assessment-engine',
       ],
     },
+    {
+      type: 'category',
+      label: 'Technical Reference',
+      collapsible: false,
+      items: [
+        'technical/auth',
+        'technical/database',
+        'technical/api',
+        'technical/testing',
+      ],
+    },
   ],
 };
 
