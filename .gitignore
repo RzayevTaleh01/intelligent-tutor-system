@@ -1,31 +1,91 @@
-# Python
+# --- Python ---
 __pycache__/
 *.py[cod]
 *$py.class
 venv/
-.env
-.env.*
+.venv/
+env/
+.env/
+build/
+develop-eggs/
+dist/
+downloads/
+eggs/
+.eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+wheels/
+share/python-wheels/
+*.egg-info/
+.installed.cfg
+*.egg
+MANIFEST
 
-# IDE
+# --- Environment Variables & Secrets ---
+.env
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
+*.env
+!.env.example
+
+# --- IDE & Editors ---
 .vscode/
 .idea/
 *.swp
-
-# Docker
-.docker/
-
-# Data & Logs
-*.log
-*.sqlite
-tmp_media/
-data/
-
-# Frontend
-frontend/node_modules/
-frontend/dist/
-frontend/.env
-frontend/coverage/
-
-# OS
+*.swo
+*~
 .DS_Store
 Thumbs.db
+
+# --- Docker ---
+.docker/
+docker-compose.override.yml
+
+# --- Data & Logs ---
+*.log
+*.sqlite
+*.db
+tmp_media/
+data/
+postgres_data/
+mysql_data/
+redis_data/
+
+# --- Frontend (Node/Next.js) ---
+frontend/node_modules/
+frontend/.next/
+frontend/out/
+frontend/build/
+frontend/dist/
+frontend/.env
+frontend/.env.local
+frontend/.env.development.local
+frontend/.env.test.local
+frontend/.env.production.local
+frontend/npm-debug.log*
+frontend/yarn-debug.log*
+frontend/yarn-error.log*
+frontend/.pnpm-debug.log*
+
+# --- Testing & Coverage ---
+htmlcov/
+.tox/
+.nox/
+.coverage
+.coverage.*
+.cache
+nosetests.xml
+coverage.xml
+*.cover
+*.py,cover
+.hypothesis/
+.pytest_cache/
+cover/
+
+# --- Trae / AI Agents ---
+.trae/
