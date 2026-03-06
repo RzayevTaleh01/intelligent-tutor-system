@@ -271,20 +271,51 @@ async def submit_attempt(
     if not session:
         raise HTTPException(status_code=403, detail="Session access denied")
 
-    plugin = PluginRegistry.get(session.course_id or "default")
+    # Get Plugin for Grading
+    course_id = session.course_id or "default"
+    plugin = PluginRegistry.get(course_id)
     if not plugin:
-         plugin = PluginRegistry.get("default")
+         # Try to register on fly if not found (e.g. after restart)
+         plugin = GenericPlugin(course_id)
+         PluginRegistry.register(course_id, plugin)
          
-    # Grade
+    # 1. Grade Attempt (Assessment Engine)
     grade_result = await plugin.grade_attempt(item_id, attempt_text, context={"db": db})
     
-    # Update State (BKT, etc.)
-    # In a full implementation, we'd update BKT here similar to v1_main.py
-    # For brevity in this refactor, we skip the BKT update lines but they belong here.
+    # 2. Update Learner State (Learner Engine)
+    # This now triggers BKT (Skill Mastery) and SRS (Forgetting Curve) updates
+    learner_engine = LearnerEngine(db)
+    state = await learner_engine.get_or_create_state(session_id)
     
+    # Prepare assessment result for engine
+    assessment_data = {
+        "score": grade_result.score,
+        "skill_tag": getattr(grade_result, "skill_tag", "general_topic"), # Plugin should ideally return skill tag
+        "item_id": item_id
+    }
+    
+    update_summary = await learner_engine.update_state(state, assessment_data)
+    
+    # 3. Record Errors (for Pedagogy)
+    if grade_result.errors:
+        error_tracker = ErrorTracker(db)
+        # We assume grade_result.errors contains codes like ["WRONG_CHOICE"]
+        # If it returns objects, we extract codes. 
+        # For GenericPlugin currently it returns empty list or strings.
+        # Let's handle list of strings.
+        error_codes = [e if isinstance(e, str) else str(e) for e in grade_result.errors]
+        await error_tracker.record_errors(session_id, assessment_data["skill_tag"], error_codes)
+
+    metrics.inc("attempts_submitted", {"tenant": current_user.tenant_id, "course": course_id})
+
     return {
         "score": grade_result.score,
-        "feedback": grade_result.feedback_short
+        "feedback": grade_result.feedback_short,
+        "mastery_update": {
+            "new_mastery": update_summary["mastery_score"],
+            "skill_mastery": update_summary["skill_mastery"],
+            "next_review": update_summary["next_review"]
+        }
     }
 
 # --- Background Jobs ---
