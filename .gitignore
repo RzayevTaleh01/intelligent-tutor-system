@@ -86,6 +86,7 @@ coverage.xml
 .hypothesis/
 .pytest_cache/
 cover/
+tests/
 
 # --- Trae / AI Agents ---
 .trae/
