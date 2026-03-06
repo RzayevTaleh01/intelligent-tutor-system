@@ -2,7 +2,7 @@ import networkx as nx
 from typing import List, Dict, Any
 from collections import Counter
 import re
-from src.knowledge.stopwords_en import STOPWORDS
+from src.knowledge.utils import STOPWORDS
 
 class TopicGraph:
     def __init__(self):

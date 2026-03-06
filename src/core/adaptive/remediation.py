@@ -34,21 +34,20 @@ class RemediationPlanner:
             top_error = recent_errors[0] # Assumed sorted by count
             plan["focus_errors"] = [top_error["code"]]
             
-            # Strategy mapping based on error type
-            if top_error["code"] == ErrorTaxonomy.GRAMMAR_TENSE:
+            # Strategy mapping based on error type - Simplified for generic domain
+            # In a real system, this mapping should come from the plugin configuration
+            if top_error["code"] in [ErrorTaxonomy.GRAMMAR_TENSE, ErrorTaxonomy.WORD_ORDER]:
                 plan["strategy"] = "explain"
-                plan["next_item_types"] = ["rewrite_sentence", "grammar_mcq"]
-            elif top_error["code"] == ErrorTaxonomy.SPELLING:
+                plan["next_item_types"] = ["explanation", "practice_basic"]
+            elif top_error["code"] in [ErrorTaxonomy.SPELLING, ErrorTaxonomy.MISSING_KEYWORD]:
                 plan["strategy"] = "micro_quiz"
-                plan["next_item_types"] = ["vocab_fill"]
+                plan["next_item_types"] = ["recall"]
             elif top_error["code"] == ErrorTaxonomy.WRONG_CHOICE:
                 plan["strategy"] = "contrast_examples"
                 plan["next_item_types"] = ["mcq"]
-            elif top_error["code"] == ErrorTaxonomy.MISSING_KEYWORD:
-                plan["strategy"] = "drill"
-                plan["next_item_types"] = ["vocab_fill", "rewrite_sentence"]
             else:
                 plan["strategy"] = "review"
+                plan["next_item_types"] = ["mixed"]
                 
         # 3. Fallback if everything is good
         if not plan["focus_skills"] and not plan["focus_errors"]:

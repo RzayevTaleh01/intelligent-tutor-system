@@ -18,7 +18,7 @@ class KnowledgeEngine:
         self.embedder = EmbeddingService()
         self.graph_builder = TopicGraph()
 
-    async def ingest_file(self, filename: str, content: bytes, source_id: str = None) -> Dict[str, Any]:
+    async def ingest_file(self, filename: str, content: bytes, source_id: str = None, course_id: str = None) -> Dict[str, Any]:
         if not source_id:
             source_id = str(uuid.uuid4())
             
@@ -29,6 +29,7 @@ class KnowledgeEngine:
         # 2. Save Source
         source = KnowledgeSource(
             id=source_id,
+            course_id=course_id, # Link to Course
             filename=filename,
             filetype=filename.split('.')[-1],
             created_at=time.time()
@@ -85,13 +86,20 @@ class KnowledgeEngine:
             "chunks_created": len(chunks_data)
         }
 
-    async def search(self, source_id: str, query: str, k: int = 5) -> List[Dict[str, Any]]:
+    async def search(self, query: str, course_id: str = None, source_id: str = None, k: int = 5) -> List[Dict[str, Any]]:
         # 1. Encode Query
         query_vec = self.embedder.encode([query])[0]
         
-        # 2. Load all embeddings for source (Naive in-memory search for now)
-        # In prod: use pgvector or separate vector DB
-        stmt = select(KnowledgeEmbedding).join(KnowledgeChunk).where(KnowledgeChunk.source_id == source_id)
+        # 2. Build Query
+        stmt = select(KnowledgeEmbedding).join(KnowledgeChunk).join(KnowledgeSource)
+        
+        if course_id:
+            stmt = stmt.where(KnowledgeSource.course_id == course_id)
+        elif source_id:
+            stmt = stmt.where(KnowledgeSource.id == source_id)
+        else:
+             return [] # Must specify scope
+            
         result = await self.db.execute(stmt)
         embeddings = result.scalars().all()
         

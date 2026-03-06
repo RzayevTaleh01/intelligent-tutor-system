@@ -1,5 +1,5 @@
 from src.db.session import engine, Base
-from src.db.models import Session, Message, Event, LearnerState
+from src.db.models import Session, Message, Event, LearnerState, Course
 from src.db.models_knowledge import KnowledgeSource
 from src.db.models_adaptive import LearnerSkill
 from src.db.models_diagnostics import LearnerTheta

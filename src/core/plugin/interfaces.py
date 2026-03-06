@@ -24,7 +24,7 @@ class GradeResult:
 class LearningPlugin(Protocol):
     """Interface that all domain plugins must implement."""
     
-    def get_content(self, difficulty_level: str) -> ContentItem:
+    async def get_content(self, difficulty_level: float, context: Optional[Dict] = None) -> ContentItem:
         """Retrieves learning content based on difficulty."""
         ...
     
@@ -32,7 +32,7 @@ class LearningPlugin(Protocol):
         """Generates new items dynamically."""
         ...
         
-    def grade_attempt(self, item_id: str, user_input: str, context: Optional[Dict] = None) -> GradeResult:
+    async def grade_attempt(self, item_id: str, user_input: str, context: Optional[Dict] = None) -> GradeResult:
         """Grades a user's attempt."""
         ...
         

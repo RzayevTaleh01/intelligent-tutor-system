@@ -2,6 +2,7 @@ from sqlalchemy import Column, String, Integer, Float, ForeignKey, DateTime, JSO
 from sqlalchemy.orm import relationship
 from src.db.base import Base
 from src.db.models_knowledge import KnowledgeSource, KnowledgeChunk, KnowledgeEmbedding, KnowledgeTopic, KnowledgeEdge
+from src.db.models_course import Course
 from src.db.models_adaptive import LearnerSkill, LearnerSchedule, LearnerError, AnalyticsEvent
 from src.db.models_diagnostics import LearnerTheta, LearnerThetaSkill, SkillDifficulty, BanditArm, ExperimentAssignment, ConceptNode, ConceptEdge
 from src.db.models_prod import Tenant, User, Job
@@ -11,8 +12,9 @@ class Session(Base):
     id = Column(String, primary_key=True)
     tenant_id = Column(String, ForeignKey("tenants.id"), nullable=True) # Added for v2
     user_id = Column(Integer, ForeignKey("users.id"), nullable=True) # Added for v2
-    created_at = Column(DateTime(timezone=True), server_default=func.now())
-    
+    course_id = Column(String, ForeignKey("courses.id"), nullable=True) # Added for Course Context
+
+    course = relationship("Course", back_populates="sessions")
     skills = relationship("LearnerSkill", backref="session", cascade="all, delete-orphan")
     schedule = relationship("LearnerSchedule", backref="session", cascade="all, delete-orphan")
     errors = relationship("LearnerError", backref="session", cascade="all, delete-orphan")
