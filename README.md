@@ -71,7 +71,11 @@ graph TD
 
 2.  **🧠 Pedagogy Engine**
     *   **Role:** The strategist.
-    *   **Function:** Decides *what* to teach next based on the student's current state. It balances challenge and skill (Vygotsky's Zone of Proximal Development).
+    *   **Function:** Decides *what* to teach next and *how* to teach it based on the student's current state. It balances challenge and skill (Vygotsky's Zone of Proximal Development).
+    *   **Adaptive Strategies (New v2.1):**
+        *   **Socratic Method:** Asks guiding questions instead of giving answers (for advanced learners).
+        *   **Feynman Technique:** Requests simple explanations to diagnose conceptual gaps.
+        *   **Scaffolding:** Breaks down complex problems into smaller steps with hints (for stuck learners).
 
 3.  **💬 Tutor Engine**
     *   **Role:** The conversationalist.

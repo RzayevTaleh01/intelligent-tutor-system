@@ -71,7 +71,11 @@ graph TD
 
 2.  **🧠 Pedaqogika Mühərriki (Pedagogy Engine)**
     *   **Rolu:** Stratq.
-    *   **Funksiyası:** Tələbənin cari vəziyyətinə əsasən növbəti addımda *nəyin* öyrədiləcəyinə qərar verir. Çətinlik və bacarıq arasında balansı qoruyur (Viqotskinin Yaxın İnkişaf Zonası).
+    *   **Funksiyası:** Tələbənin cari vəziyyətinə əsasən növbəti addımda *nəyin* və *necə* öyrədiləcəyinə qərar verir. Çətinlik və bacarıq arasında balansı qoruyur (Viqotskinin Yaxın İnkişaf Zonası).
+    *   **Adaptiv Strategiyalar (Yeni v2.1):**
+        *   **Sokrat Metodu:** Birbaşa cavab vermək əvəzinə, yönləndirici suallar verir (güclü tələbələr üçün).
+        *   **Feynman Texnikası:** Konseptual boşluqları tapmaq üçün tələbədən sadə izah tələb edir.
+        *   **Scaffolding (Dəstək):** Çətin problemləri kiçik addımlara bölür və ipucları verir (ilişib qalanlar üçün).
 
 3.  **💬 Tutor Mühərriki (Tutor Engine)**
     *   **Rolu:** Həmsöhbət.
