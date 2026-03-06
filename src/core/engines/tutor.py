@@ -1,66 +1,84 @@
-from typing import List, Dict, Any
+from typing import Any
 from src.llm.ollama_client import OllamaClient
 from src.core.plugin.interfaces import ContentItem
+from src.config import get_settings
+
+settings = get_settings()
 
 class TutorEngine:
+    """
+    Modernized TutorEngine responsible for pedagogical dialogue generation.
+    It encapsulates all prompt engineering and strategy injection logic.
+    """
+    
     def __init__(self, llm_client: OllamaClient):
         self.llm = llm_client
 
-    def _construct_system_prompt(self, context_data: Dict[str, Any], content: ContentItem) -> str:
+    def _construct_system_prompt(self, context_data: dict[str, Any], content: ContentItem | None) -> str:
         strategy = context_data.get('strategy', 'standard')
         mastery = context_data.get('mastery_score', 0.5)
         
-        base_prompt = f"""You are an adaptive AI Tutor for {content.metadata.get('domain', 'General Learning')}.
+        domain = content.metadata.get('domain', 'General Learning') if content else "General Learning"
+        content_text = content.text if content else "No specific lesson content provided. Answer based on general knowledge."
+        
+        base_prompt = f"""You are an adaptive AI Tutor for {domain}.
         
         Current Lesson Content:
-        {content.text}
+        {content_text}
         
         Learner State:
         - Mastery Level: {mastery:.2f}
         - Current Strategy: {strategy}
         """
         
-        # Strategy-specific instructions
-        if strategy in ["socratic", "socratic_challenge"]:
-            strategy_instruction = """
+        # Strategy-specific instructions map (could be moved to config/yaml)
+        strategies = {
+            "socratic": """
             STRATEGY: SOCRATIC METHOD
             - Do NOT provide the direct answer.
             - Ask guiding questions to lead the student to the answer.
             - If the student is wrong, ask a question that highlights their misconception.
             - Encourage critical thinking.
-            """
-        elif strategy == "feynman":
-            strategy_instruction = """
+            """,
+            "socratic_challenge": """
+            STRATEGY: SOCRATIC CHALLENGE
+            - The student is doing well. Challenge them with a deeper question.
+            - Ask "Why?" or "What if?" questions.
+            - Encourage them to connect this concept to other topics.
+            """,
+            "feynman": """
             STRATEGY: FEYNMAN TECHNIQUE
             - Ask the student to explain the concept in their own words as if teaching a beginner.
             - Identify gaps in their explanation and ask them to clarify those specific parts.
             - Use analogies to simplify complex ideas.
-            """
-        elif strategy == "scaffolding":
-            strategy_instruction = """
+            """,
+            "scaffolding": """
             STRATEGY: SCAFFOLDING (SUPPORT)
             - The student is stuck. Break the problem down into smaller, manageable steps.
             - Provide a hint for the immediate next step only.
             - Use simple language and encouraging tone.
             - Validate partially correct understanding before correcting errors.
-            """
-        else: # Standard, drill, explain
-            strategy_instruction = """
+            """,
+            "standard": """
             STRATEGY: DIRECT INSTRUCTION
             - Act as a supportive tutor.
             - Use the provided lesson content to guide the user.
             - If the user makes a mistake, explain it gently based on the content.
             - Keep responses concise and encouraging.
             """
+        }
+        
+        # Fallback to standard if strategy not found
+        strategy_instruction = strategies.get(strategy, strategies["standard"])
             
         return base_prompt + "\n" + strategy_instruction
 
     async def generate_reply(
         self, 
         user_message: str, 
-        history: List[Dict[str, str]], 
-        context_data: Dict[str, Any],
-        current_content: ContentItem
+        history: list[dict[str, str]], 
+        context_data: dict[str, Any],
+        current_content: ContentItem | None = None
     ) -> str:
         
         system_prompt = self._construct_system_prompt(context_data, current_content)
@@ -68,10 +86,13 @@ class TutorEngine:
         # Build message chain
         messages = [{"role": "system", "content": system_prompt}]
         
-        # Add last few messages from history for context (e.g., last 4)
-        messages.extend(history[-4:])
+        # Add last N messages from history for context
+        # Limit history to prevent context window overflow
+        # Filter out system messages from history if they exist
+        clean_history = [msg for msg in history if msg.get("role") in ("user", "assistant")]
+        messages.extend(clean_history[-settings.VECTOR_SEARCH_LIMIT:]) # Using search limit as a heuristic for history length for now
         
-        # Add current user message if not already in history (it usually isn't)
+        # Add current user message
         messages.append({"role": "user", "content": user_message})
         
         response = await self.llm.generate_chat_completion(messages)

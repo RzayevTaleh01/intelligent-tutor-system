@@ -2,12 +2,13 @@ import uuid
 import asyncio
 import time
 import logging
-from typing import List, Dict, Any, Optional
-from fastapi import FastAPI, Depends, HTTPException, UploadFile, File, BackgroundTasks, Request
+import aiofiles
+from typing import Any
+from fastapi import FastAPI, Depends, HTTPException, UploadFile, File, BackgroundTasks
 from fastapi.security import OAuth2PasswordRequestForm
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select
-from pydantic import BaseModel
+from fastapi.middleware.cors import CORSMiddleware
 
 from src.db.session import get_db
 from src.db.models import Session, Job
@@ -17,16 +18,13 @@ from src.core.runtime.rate_limit import rate_limiter
 from src.core.obs.metrics import metrics
 from src.llm.providers.ollama import OllamaProvider
 from src.llm.providers.mock import MockProvider
-from fastapi.middleware.cors import CORSMiddleware
+from src.config import get_settings
 
 # Core Engines
 from src.core.engines.learner import LearnerEngine
 from src.core.engines.pedagogy import PedagogyEngine
-from src.core.engines.assessment import AssessmentEngine
 from src.core.engines.tutor import TutorEngine
-from src.knowledge.engine import KnowledgeEngine
 from src.core.adaptive.error_taxonomy import ErrorTracker
-from src.core.runtime.cache import response_cache
 
 # Plugin System
 from src.core.plugin.registry import PluginRegistry
@@ -35,44 +33,32 @@ from src.core.plugin.generic_plugin import GenericPlugin
 from src.api.routers import course
 from src.db.models_course import Course
 
-# Init Components
-app = FastAPI(title="EduVision Pro API (Core)", version="2.0.0")
+# Configuration
+settings = get_settings()
+logger = logging.getLogger("eduvision.core")
+
+# Init App
+app = FastAPI(title=settings.PROJECT_NAME, version=settings.VERSION, openapi_url=f"{settings.API_V1_STR}/openapi.json")
 
 # Include Routers
-app.include_router(course.router)
+app.include_router(course.router, prefix=settings.API_V1_STR)
 
-# CORS Middleware
+# CORS Middleware (Driven by Config)
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=[
-        "http://localhost:3000",
-        "http://localhost:3001",
-        "http://localhost:3002",
-        "http://127.0.0.1:3000",
-        "http://127.0.0.1:3001",
-        "http://127.0.0.1:3002",
-        "http://localhost:5173",
-        "http://localhost:5174",
-        "http://127.0.0.1:5173",
-        "http://127.0.0.1:5174",
-    ],
+    allow_origins=settings.ALLOWED_ORIGINS,
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
 )
 
-logger = logging.getLogger("eduvision.core")
-
-# LLM Factory (Fallback)
+# LLM Factory
 ollama = OllamaProvider()
 mock_llm = MockProvider()
-active_llm = ollama
+active_llm = ollama # Default
 
 # Engines
 pedagogy_engine = PedagogyEngine()
-# Assessment Engine needs a plugin instance, but we want it dynamic.
-# We will instantiate it inside endpoints or make it plugin-aware.
-# For now, we use a simple wrapper or instantiate on the fly.
 
 @app.on_event("startup")
 async def startup():
@@ -93,21 +79,20 @@ async def startup():
         res = await session.execute(stmt)
         courses = res.scalars().all()
         for c in courses:
-            PluginRegistry.register(c.id, GenericPlugin(c.id))
+            PluginRegistry.register(str(c.id), GenericPlugin(str(c.id)))
             logger.info(f"Registered plugin for course: {c.title} ({c.id})")
-        break # We only need one session from the generator
+        break 
         
     logger.info("Startup complete. Plugins loaded.")
 
 # --- Auth Endpoints ---
 
-@app.post("/auth/register", status_code=201)
+@app.post(f"{settings.API_V1_STR}/auth/register", status_code=201)
 async def register(
     email: str, password: str, tenant_name: str, role: str = "student", 
     db: AsyncSession = Depends(get_db)
 ):
-    # Simplified registration (auto-create tenant if needed)
-    # In prod, tenant creation is separate superadmin step
+    # Auto-create tenant logic (Simplified for demo)
     stmt = select(Tenant).where(Tenant.name == tenant_name)
     res = await db.execute(stmt)
     tenant = res.scalar_one_or_none()
@@ -116,7 +101,7 @@ async def register(
         tenant_id = str(uuid.uuid4())
         tenant = Tenant(id=tenant_id, name=tenant_name)
         db.add(tenant)
-        await db.flush() # get id
+        await db.flush()
     
     stmt_u = select(User).where(User.email == email, User.tenant_id == tenant.id)
     res_u = await db.execute(stmt_u)
@@ -129,12 +114,8 @@ async def register(
     await db.commit()
     return {"status": "created", "email": email, "tenant": tenant.name}
 
-@app.post("/auth/login", response_model=Token)
+@app.post(f"{settings.API_V1_STR}/auth/login", response_model=Token)
 async def login(form_data: OAuth2PasswordRequestForm = Depends(), db: AsyncSession = Depends(get_db)):
-    # Username format expected: email@tenant_name (simple convention for multi-tenant login)
-    # OR send tenant_id in header? simpler: username=email, we assume tenant from context or just find unique email
-    # Let's simplify: login requires email and we find user. If duplicate emails across tenants, fail (demo limitation)
-    
     stmt = select(User).where(User.email == form_data.username)
     res = await db.execute(stmt)
     users = res.scalars().all()
@@ -142,30 +123,28 @@ async def login(form_data: OAuth2PasswordRequestForm = Depends(), db: AsyncSessi
     if not users:
         raise HTTPException(status_code=400, detail="Incorrect email or password")
     
-    # Just pick first for demo (assuming unique email globally for now or single tenant usage)
     user = users[0] 
     
     if not verify_password(form_data.password, user.password_hash):
         raise HTTPException(status_code=400, detail="Incorrect email or password")
         
     access_token = create_access_token(
-        data={"sub": user.email, "tenant_id": user.tenant_id, "role": user.role, "user_id": user.id}
+        data={"sub": user.email, "tenant_id": user.tenant_id, "role": user.role, "user_id": str(user.id)}
     )
     return {"access_token": access_token, "token_type": "bearer"}
 
-@app.get("/me")
+@app.get(f"{settings.API_V1_STR}/me")
 async def read_users_me(current_user: User = Depends(get_current_user)):
     return {"email": current_user.email, "role": current_user.role, "tenant_id": current_user.tenant_id}
 
-# --- Core Features with Auth & Observability ---
+# --- Core Features ---
 
-@app.post("/sessions")
+@app.post(f"{settings.API_V1_STR}/sessions")
 async def create_session(
     course_id: str = "default",
     current_user: User = Depends(get_current_user), 
     db: AsyncSession = Depends(get_db)
 ):
-    # Verify course exists if not default
     if course_id != "default":
         stmt = select(Course).where(Course.id == course_id)
         res = await db.execute(stmt)
@@ -180,22 +159,19 @@ async def create_session(
     learner_engine = LearnerEngine(db)
     await learner_engine.get_or_create_state(session_id)
     
-    metrics.inc("sessions_created", {"tenant": current_user.tenant_id})
+    metrics.inc("sessions_created", {"tenant": str(current_user.tenant_id)})
     return {"session_id": session_id}
 
-@app.post("/chat")
+@app.post(f"{settings.API_V1_STR}/chat")
 async def chat(
     session_id: str, 
     message: str, 
     current_user: User = Depends(get_current_user),
     db: AsyncSession = Depends(get_db)
 ):
-    # Rate Limit
     await rate_limiter.check(f"user:{current_user.id}")
-    
     start_time = time.time()
     
-    # Verify ownership
     stmt = select(Session).where(Session.id == session_id, Session.user_id == current_user.id)
     res = await db.execute(stmt)
     session = res.scalar_one_or_none()
@@ -215,36 +191,32 @@ async def chat(
         db, session_id, state, recent_errors=top_errors, course_id=course_id
     )
     
-    # 3. Content from Plugin (Dynamic)
-    course_id = session.course_id or "default"
-    plugin = PluginRegistry.get(course_id)
-    if not plugin:
-         # Fallback to default if course plugin missing (e.g. after restart without DB sync)
-         plugin = PluginRegistry.get("default")
-         
+    # 3. Content Retrieval
+    plugin = PluginRegistry.get(course_id) or PluginRegistry.get("default")
     if not plugin:
          raise HTTPException(status_code=500, detail="No active plugin found")
          
-    # Pass DB context for GenericPlugin
     content_item = await plugin.get_content(plan["next_difficulty"], context={"db": db})
     
-    # 4. Generate AI Tutor Reply
-    # We combine the content item with the LLM to generate a pedagogical response
-    # This logic was partially in TutorEngine. Let's use TutorEngine if possible.
-    tutor_engine = TutorEngine(llm_client=active_llm) # Use active_llm adapter
+    # 4. Tutor Engine Response (Modernized)
+    tutor_engine = TutorEngine(llm_client=active_llm)
     
-    # For now, simple direct generation
-    system_prompt = f"""You are an AI Tutor. 
-    Current Strategy: {plan['chosen_action']}
-    Content: {content_item.text}
-    User Mastery: {state.mastery_score}
-    """
+    # Context data for Tutor Engine
+    context_data = {
+        "strategy": plan["chosen_action"],
+        "mastery_score": state.mastery_score
+    }
+    
+    # History Mock (Ideally fetch from DB)
+    history = [] 
     
     try:
-        reply = await active_llm.generate_chat([
-            {"role": "system", "content": system_prompt},
-            {"role": "user", "content": message}
-        ])
+        reply = await tutor_engine.generate_reply(
+            user_message=message,
+            history=history,
+            context_data=context_data,
+            current_content=content_item
+        )
     except Exception as e:
         logger.error(f"LLM Error: {e}")
         reply = "I'm having trouble connecting to my brain. Let's try again."
@@ -257,7 +229,7 @@ async def chat(
         "content_id": content_item.content_id
     }
 
-@app.post("/attempt")
+@app.post(f"{settings.API_V1_STR}/attempt")
 async def submit_attempt(
     session_id: str,
     item_id: str,
@@ -265,49 +237,40 @@ async def submit_attempt(
     current_user: User = Depends(get_current_user),
     db: AsyncSession = Depends(get_db)
 ):
-    # Verify ownership
     stmt = select(Session).where(Session.id == session_id, Session.user_id == current_user.id)
     res = await db.execute(stmt)
     session = res.scalar_one_or_none()
     if not session:
         raise HTTPException(status_code=403, detail="Session access denied")
 
-    # Get Plugin for Grading
     course_id = session.course_id or "default"
     plugin = PluginRegistry.get(course_id)
     if not plugin:
-         # Try to register on fly if not found (e.g. after restart)
          plugin = GenericPlugin(course_id)
          PluginRegistry.register(course_id, plugin)
          
-    # 1. Grade Attempt (Assessment Engine)
+    # 1. Assessment
     grade_result = await plugin.grade_attempt(item_id, attempt_text, context={"db": db})
     
-    # 2. Update Learner State (Learner Engine)
-    # This now triggers BKT (Skill Mastery) and SRS (Forgetting Curve) updates
+    # 2. Learner Update
     learner_engine = LearnerEngine(db)
     state = await learner_engine.get_or_create_state(session_id)
     
-    # Prepare assessment result for engine
     assessment_data = {
         "score": grade_result.score,
-        "skill_tag": getattr(grade_result, "skill_tag", "general_topic"), # Plugin should ideally return skill tag
+        "skill_tag": getattr(grade_result, "skill_tag", "general_topic"),
         "item_id": item_id
     }
     
     update_summary = await learner_engine.update_state(state, assessment_data)
     
-    # 3. Record Errors (for Pedagogy)
+    # 3. Error Tracking
     if grade_result.errors:
         error_tracker = ErrorTracker(db)
-        # We assume grade_result.errors contains codes like ["WRONG_CHOICE"]
-        # If it returns objects, we extract codes. 
-        # For GenericPlugin currently it returns empty list or strings.
-        # Let's handle list of strings.
         error_codes = [e if isinstance(e, str) else str(e) for e in grade_result.errors]
         await error_tracker.record_errors(session_id, assessment_data["skill_tag"], error_codes)
 
-    metrics.inc("attempts_submitted", {"tenant": current_user.tenant_id, "course": course_id})
+    metrics.inc("attempts_submitted", {"tenant": str(current_user.tenant_id), "course": course_id})
 
     return {
         "score": grade_result.score,
@@ -321,15 +284,7 @@ async def submit_attempt(
 
 # --- Background Jobs ---
 
-async def process_knowledge_upload(job_id: str, file_path: str, db: AsyncSession):
-    # Simulate long running task
-    logger.info(f"Starting job {job_id}")
-    await asyncio.sleep(2) # Chunking...
-    
-    # Update progress
-    logger.info(f"Job {job_id} completed processing {file_path}")
-
-@app.post("/knowledge/upload")
+@app.post(f"{settings.API_V1_STR}/knowledge/upload")
 async def upload_knowledge(
     file: UploadFile = File(...),
     background_tasks: BackgroundTasks = None,
@@ -337,10 +292,12 @@ async def upload_knowledge(
     db: AsyncSession = Depends(get_db)
 ):
     job_id = str(uuid.uuid4())
-    # Save file temp
     path = f"tmp_media/{file.filename}"
-    with open(path, "wb") as f:
-        f.write(await file.read())
+    
+    # Async File Write using aiofiles
+    async with aiofiles.open(path, "wb") as f:
+        content = await file.read()
+        await f.write(content)
         
     job = Job(id=job_id, tenant_id=current_user.tenant_id, user_id=current_user.id, type="BUILD_INDEX", status="pending")
     db.add(job)
@@ -348,7 +305,7 @@ async def upload_knowledge(
     
     return {"job_id": job_id, "status": "queued"}
 
-@app.get("/jobs/{job_id}")
+@app.get(f"{settings.API_V1_STR}/jobs/{{job_id}}")
 async def get_job_status(job_id: str, current_user: User = Depends(get_current_user), db: AsyncSession = Depends(get_db)):
     stmt = select(Job).where(Job.id == job_id, Job.tenant_id == current_user.tenant_id)
     res = await db.execute(stmt)

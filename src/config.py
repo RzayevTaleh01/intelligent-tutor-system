@@ -1,30 +1,51 @@
 import os
-from pydantic_settings import BaseSettings
+from pydantic_settings import BaseSettings, SettingsConfigDict
 from functools import lru_cache
 
 class Settings(BaseSettings):
     # App
-    PROJECT_NAME: str = "Adaptive Learning Core"
-    VERSION: str = "0.1.0"
+    PROJECT_NAME: str = "EduVision Adaptive Learning Core"
+    VERSION: str = "0.2.0"
+    API_V1_STR: str = "/api/v1"
     
+    # Security
+    SECRET_KEY: str = "CHANGE_THIS_IN_PRODUCTION_TO_A_STRONG_SECRET"
+    ACCESS_TOKEN_EXPIRE_MINUTES: int = 30
+    ALGORITHM: str = "HS256"
+    ALLOWED_ORIGINS: list[str] = [
+        "http://localhost",
+        "http://localhost:3000",
+        "http://localhost:8000",
+        "https://eduvision.github.io"
+    ]
+
     # Database
     DATABASE_URL: str = "postgresql+asyncpg://postgres:password@localhost:5432/adaptive_core"
     
-    # LLM
+    # LLM (Ollama)
     OLLAMA_HOST: str = "http://localhost:11434"
     OLLAMA_MODEL: str = "llama3.1:8b"
+    EMBEDDING_MODEL: str = "sentence-transformers/all-MiniLM-L6-v2"
     
-    # Voice
+    # Voice / Audio
     WHISPER_MODEL: str = "tiny" # using tiny for speed in dev
     PIPER_VOICE: str = "en_US-amy-medium"
     
-    # Cost/Runtime
+    # Cost/Runtime & Limits
     USE_LLM_FOR_SUMMARY: bool = False
     MAX_CONTEXT_CHARS: int = 12000
+    VECTOR_SEARCH_LIMIT: int = 5
+    CHUNK_SIZE: int = 500
+    CHUNK_OVERLAP: int = 50
     
-    class Config:
-        env_file = ".env"
+    # Pydantic Settings Config
+    model_config = SettingsConfigDict(
+        env_file=".env",
+        env_file_encoding="utf-8",
+        case_sensitive=True,
+        extra="ignore"
+    )
 
 @lru_cache()
-def get_settings():
+def get_settings() -> Settings:
     return Settings()
