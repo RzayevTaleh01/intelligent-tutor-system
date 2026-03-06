@@ -2,6 +2,42 @@
 
 **ITS (Intelligent Tutoring System - İntellektual Tədris Sistemi)**, fərdi tədris təcrübəsini simulyasiya etmək üçün dizayn edilmiş hərtərəfli, adaptiv bir təhsil ekosistemidir.
 
+---
+
+## 📅 Versiya Tarixçəsi və Yeniliklər
+
+<details open>
+<summary><strong>🚀 v2.1: Koqnitiv İntellekt Yenilənməsi (Hazırkı)</strong></summary>
+
+*   **🧠 Pedaqogika Mühərriki Yenilənməsi:**
+    *   **Sokrat Metodu:** Təfəkkürü inkişaf etdirmək üçün yönləndirici suallar.
+    *   **Feynman Texnikası:** Konseptual boşluqları tapmaq üçün sadə izah tələbi.
+    *   **Scaffolding (Dəstək):** Çətin tapşırıqların kiçik addımlara bölünməsi.
+*   **✅ Qiymətləndirmə Mühərriki:**
+    *   Llama 3.1 ilə **AI Qiymətləndirmə**.
+    *   Dəqiqlik, uyğunluq və dərinlik üzrə ətraflı JSON rəylər.
+*   **🧪 Verifikasiya:** Strategiyalar üçün xüsusi test skriptləri əlavə edildi.
+</details>
+
+<details>
+<summary><strong>🏗️ v2.0: Əsas Arxitektura Dəyişikliyi</strong></summary>
+
+*   **5-Mühərrik Arxitekturası:** Bilik, Pedaqogika, Tutor, Tələbə və Qiymətləndirmə mühərriklərinin qarşılıqlı əlaqəsi quruldu.
+*   **RAG İnteqrasiyası:** Dinamik məzmun axtarışı üçün Bilik Qrafı və Vektor Axtarışı.
+*   **Plugin Sistemi:** İstənilən fənnin kod dəyişikliyi olmadan öyrədilməsi üçün `GenericPlugin`.
+*   **Dockerization:** Verilənlər bazası, API və AI xidmətləri üçün konteyner dəstəyi.
+</details>
+
+<details>
+<summary><strong>🌱 v1.0: İlkin Prototip</strong></summary>
+
+*   Sadə Çat İnterfeysi.
+*   Autentifikasiya (JWT).
+*   Statik Qayda-əsaslı cavablar.
+</details>
+
+---
+
 ## 🤖 AI Model və Texnologiya
 ITS-in nüvəsində **xüsusi olaraq hazırlanmış və təlimləndirilən AI modeli** dayanır. Sadə API qabıqlarından (wrappers) fərqli olaraq, bu sistem pedaqoji dialoq və tədris dəstəyi üçün optimallaşdırılmış **Llama 3.1 (8B)** modelinin incə-tənzimlənmiş (fine-tuned) versiyasından istifadə edir.
 - **Model:** Llama 3.1 8B (Təhsil verilənləri üzərində fine-tune olunub)

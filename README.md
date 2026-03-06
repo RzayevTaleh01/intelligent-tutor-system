@@ -2,6 +2,43 @@
 
 **ITS (Intelligent Tutoring System)** is a comprehensive, adaptive educational ecosystem designed to simulate a one-on-one tutoring experience.
 
+---
+
+## 📅 Version History & Changelog
+
+<details open>
+<summary><strong>🚀 v2.1: Cognitive Intelligence Update (Current)</strong></summary>
+
+*   **🧠 Pedagogy Engine Upgrade:**
+    *   Added **Socratic Method** (Guided questioning for advanced learners).
+    *   Added **Feynman Technique** (Conceptual gap diagnosis).
+    *   Added **Scaffolding** (Step-by-step breakdown for stuck students).
+*   **✅ Assessment Engine Upgrade:**
+    *   Implemented **AI Grading** using Llama 3.1.
+    *   Provides detailed JSON feedback with scores (accuracy, relevance, depth).
+*   **🧪 Verification:** Added specific test scripts for Pedagogy strategies and Assessment logic.
+</details>
+
+<details>
+<summary><strong>🏗️ v2.0: Core Architecture Overhaul</strong></summary>
+
+*   **5-Engine Architecture:** Defined the core interaction between Knowledge, Pedagogy, Tutor, Learner, and Assessment engines.
+*   **RAG Integration:** Implemented Knowledge Graph and Vector Search for dynamic content retrieval.
+*   **Plugin System:** Created `GenericPlugin` to allow any subject material to be taught without code changes.
+*   **Dockerization:** Full container support for Database, API, and LLM services.
+</details>
+
+<details>
+<summary><strong>🌱 v1.0: Initial Prototype</strong></summary>
+
+*   Basic Chat Interface.
+*   Simple Authentication (JWT).
+*   Static Rule-based responses.
+*   Proof of Concept for ITS.
+</details>
+
+---
+
 ## 🤖 AI Model & Technology
 At the core of ITS lies a **custom-built, trainable AI model**. Unlike generic wrappers, this system utilizes a fine-tuned version of **Llama 3.1 (8B)**, optimized specifically for pedagogical dialogue and educational scaffolding.
 - **Model:** Llama 3.1 8B (Fine-tuned on educational datasets)
