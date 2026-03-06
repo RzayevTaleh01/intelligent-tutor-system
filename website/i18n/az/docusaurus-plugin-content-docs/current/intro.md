@@ -1,10 +1,10 @@
 ---
-sidebar_position: 2
-title: Introduction (AZ)
+sidebar_position: 1
+title: Giriş (AZ)
+slug: /
 ---
 
-# ITS - Intelligent Tutoring System
-
+# ITS - İntellektual Tədris Sistemi
 
 **ITS (Intelligent Tutoring System - İntellektual Tədris Sistemi)**, fərdi tədris təcrübəsini simulyasiya etmək üçün dizayn edilmiş hərtərəfli, adaptiv bir təhsil ekosistemidir.
 
