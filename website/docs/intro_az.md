@@ -58,8 +58,6 @@ Sistem **Müəllimlərə** materialları (Dərslər, Tapşırıqlar, Meyarlar) y
 
 Sistem, fərdiləşdirilmiş təhsil təqdim etmək üçün birlikdə işləyən beş qarşılıqlı əlaqəli intellektual mühərrik ətrafında qurulmuşdur.
 
-![alt text](image.png)
-
 ### Sistem Memarlığı Diaqramı
 
 ```mermaid

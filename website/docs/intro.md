@@ -24,8 +24,6 @@ The system empowers **Teachers** to upload raw materials (Lessons, Challenges, R
 
 The system is built around five interacting intelligent engines that work together to deliver personalized education.
 
-![alt text](image.png)
-
 ### System Architecture Diagram
 
 ```mermaid
