@@ -267,7 +267,8 @@ async def submit_attempt(
     # Verify ownership
     stmt = select(Session).where(Session.id == session_id, Session.user_id == current_user.id)
     res = await db.execute(stmt)
-    if not res.scalar_one_or_none():
+    session = res.scalar_one_or_none()
+    if not session:
         raise HTTPException(status_code=403, detail="Session access denied")
 
     plugin = PluginRegistry.get(session.course_id or "default")
