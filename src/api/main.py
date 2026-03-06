@@ -4,6 +4,7 @@ import time
 import logging
 import aiofiles
 from typing import Any
+from contextlib import asynccontextmanager
 from fastapi import FastAPI, Depends, HTTPException, UploadFile, File, BackgroundTasks
 from fastapi.security import OAuth2PasswordRequestForm
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -37,21 +38,6 @@ from src.db.models_course import Course
 settings = get_settings()
 logger = logging.getLogger("eduvision.core")
 
-# Init App
-app = FastAPI(title=settings.PROJECT_NAME, version=settings.VERSION, openapi_url=f"{settings.API_V1_STR}/openapi.json")
-
-# Include Routers
-app.include_router(course.router, prefix=settings.API_V1_STR)
-
-# CORS Middleware (Driven by Config)
-app.add_middleware(
-    CORSMiddleware,
-    allow_origins=settings.ALLOWED_ORIGINS,
-    allow_credentials=True,
-    allow_methods=["*"],
-    allow_headers=["*"],
-)
-
 # LLM Factory
 ollama = OllamaProvider()
 mock_llm = MockProvider()
@@ -60,8 +46,9 @@ active_llm = ollama # Default
 # Engines
 pedagogy_engine = PedagogyEngine()
 
-@app.on_event("startup")
-async def startup():
+@asynccontextmanager
+async def lifespan(app: FastAPI):
+    # Startup logic
     global active_llm
     if await ollama.check_health():
         logger.info("Ollama is healthy. Using Primary LLM.")
@@ -74,16 +61,43 @@ async def startup():
     PluginRegistry.register("default", DefaultPlugin())
     
     # Load Courses from DB and register their plugins
-    async for session in get_db():
+    # Note: Using get_db() directly inside context manager is tricky because it yields.
+    # We'll create a new session manually for startup.
+    from src.db.session import async_session_factory
+    async with async_session_factory() as session:
         stmt = select(Course).where(Course.is_active == 1)
         res = await session.execute(stmt)
         courses = res.scalars().all()
         for c in courses:
             PluginRegistry.register(str(c.id), GenericPlugin(str(c.id)))
             logger.info(f"Registered plugin for course: {c.title} ({c.id})")
-        break 
-        
+            
     logger.info("Startup complete. Plugins loaded.")
+    
+    yield
+    
+    # Shutdown logic (if any)
+    logger.info("Shutting down...")
+
+# Init App
+app = FastAPI(
+    title=settings.PROJECT_NAME, 
+    version=settings.VERSION, 
+    openapi_url=f"{settings.API_V1_STR}/openapi.json",
+    lifespan=lifespan
+)
+
+# Include Routers
+app.include_router(course.router, prefix=settings.API_V1_STR)
+
+# CORS Middleware (Driven by Config)
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=settings.ALLOWED_ORIGINS,
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
 
 # --- Auth Endpoints ---
 
@@ -287,7 +301,7 @@ async def submit_attempt(
 @app.post(f"{settings.API_V1_STR}/knowledge/upload")
 async def upload_knowledge(
     file: UploadFile = File(...),
-    background_tasks: BackgroundTasks = None,
+    background_tasks: BackgroundTasks = None, # kept for signature but unused in body to respect original logic
     current_user: User = Depends(get_current_user),
     db: AsyncSession = Depends(get_db)
 ):

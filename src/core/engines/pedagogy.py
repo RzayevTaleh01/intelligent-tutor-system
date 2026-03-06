@@ -1,4 +1,4 @@
-from typing import List, Dict, Any
+from typing import Any
 from sqlalchemy.ext.asyncio import AsyncSession
 from src.db.models import LearnerState
 from src.core.runtime.cost_control import CostController
@@ -20,10 +20,10 @@ class PedagogyEngine:
         db: AsyncSession,
         session_id: str,
         state: LearnerState, 
-        learner_skills: List[Dict[str, Any]] = [], 
-        recent_errors: List[Dict[str, Any]] = [],
+        learner_skills: list[dict[str, Any]] = [], 
+        recent_errors: list[dict[str, Any]] = [],
         course_id: str = "default"
-    ) -> Dict[str, Any]:
+    ) -> dict[str, Any]:
         """
         Async version with full Cognitive Diagnostics + Bandit + A/B
         """
@@ -85,5 +85,5 @@ class PedagogyEngine:
             "diagnostics": diag_report
         }
 
-    def prepare_context(self, lesson_text: str, history: List[Dict[str, str]]) -> Dict[str, Any]:
+    def prepare_context(self, lesson_text: str, history: list[dict[str, str]]) -> dict[str, Any]:
         return self.cost_controller.optimize_context(history, lesson_text)

@@ -1,4 +1,4 @@
-from typing import Dict, List, Any
+from typing import Any
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select
 from src.db.models import LearnerState
@@ -23,7 +23,7 @@ class LearnerEngine:
             
         return state
 
-    async def update_state(self, state: LearnerState, assessment_result: Dict[str, Any]):
+    async def update_state(self, state: LearnerState, assessment_result: dict[str, Any]):
         """
         Updates the learner state based on assessment results.
         Integrates BKT (Bayesian Knowledge Tracing) and SRS (Spaced Repetition).
