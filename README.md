@@ -1,4 +1,4 @@
-# EduVision - Adaptive Intelligent Tutoring System
+# Adaptive Intelligent Tutoring System
 
 **EduVision** is a next-generation adaptive educational platform designed to simulate a one-on-one human tutoring experience. It leverages advanced AI, cognitive science principles, and dynamic knowledge graphs to provide personalized learning paths for every student.
 
