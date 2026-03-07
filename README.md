@@ -115,11 +115,13 @@ uvicorn src.api.main:app --reload
 
 ---
 
-## 📚 API Documentation
+## 📚 API & Technical Documentation
 
 EduVision provides a fully interactive Swagger UI for testing and integration.
 
-**Access:** `http://localhost:8000/docs`
+**API Playground:** `http://localhost:8000/docs`
+
+For detailed architectural and technical documentation, please refer to the **[Official Documentation](./website/docs/intro.md)** or view the `website/docs` folder.
 
 ### Key Endpoints
 *   `POST /courses/` - Create a new adaptive course.

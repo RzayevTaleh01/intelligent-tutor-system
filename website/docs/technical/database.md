@@ -9,6 +9,9 @@ title: Database Schema
 
 EduVision ITS uses **PostgreSQL** as its primary relational database. The schema is designed to support high-throughput interactions while maintaining relational integrity for complex educational data.
 
+Key extensions used:
+*   **`pgvector`**: For storing and querying high-dimensional vector embeddings (768 dimensions for `all-MiniLM-L6-v2`).
+
 ## 🗄️ Core Tables (`models_prod.py`)
 
 These tables handle the administrative and structural aspects of the LMS.
@@ -36,13 +39,23 @@ These tables handle the administrative and structural aspects of the LMS.
 
 ## 🧠 Knowledge Graph (`models_knowledge.py`)
 
-These tables persist the semantic structure of the course material.
+These tables persist the semantic structure of the course material and enable RAG.
+
+### `KnowledgeSource`
+*   `id` (UUID, PK)
+*   `course_id` (FK -> Course)
+*   `filename` (String)
+*   `created_at` (Float)
 
 ### `KnowledgeChunk`
 *   `id` (UUID, PK)
-*   `content` (Text)
-*   `embedding` (Vector[768]) - **PGVector Extension**
-*   `source_file` (String)
+*   `source_id` (FK -> KnowledgeSource)
+*   `text` (Text) - The actual educational content.
+*   `position` (Integer) - Order in original document.
+
+### `KnowledgeEmbedding`
+*   `chunk_id` (FK -> KnowledgeChunk)
+*   `vector` (Vector[384]) - **PGVector** column storing semantic embeddings from `sentence-transformers/all-MiniLM-L6-v2`.
 
 ### `KnowledgeEdge`
 *   `source_chunk_id` (FK)
