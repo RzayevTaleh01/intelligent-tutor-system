@@ -22,9 +22,9 @@ class Settings(BaseSettings):
     # Database
     DATABASE_URL: str = "postgresql+asyncpg://postgres:password@localhost:5432/adaptive_core"
     
-    # LLM (Ollama)
-    OLLAMA_HOST: str = "http://localhost:11434"
-    OLLAMA_MODEL: str = "llama3.1:8b"
+    # LLM (Together AI)
+    TOGETHER_API_KEY: str = ""
+    TOGETHER_MODEL: str = "meta-llama/Meta-Llama-3.1-70B-Instruct-Turbo"
     EMBEDDING_MODEL: str = "sentence-transformers/all-MiniLM-L6-v2"
     
     # Voice / Audio
@@ -43,7 +43,8 @@ class Settings(BaseSettings):
         env_file=".env",
         env_file_encoding="utf-8",
         case_sensitive=True,
-        extra="ignore"
+        extra="ignore",
+        _env_file_encoding="utf-8"
     )
 
 @lru_cache()

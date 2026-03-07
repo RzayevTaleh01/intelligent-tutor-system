@@ -1,5 +1,5 @@
 from typing import Any
-from src.llm.ollama_client import OllamaClient
+from src.llm.providers.base import LLMProvider
 from src.core.plugin.interfaces import ContentItem
 from src.config import get_settings
 
@@ -11,7 +11,7 @@ class TutorEngine:
     It encapsulates all prompt engineering and strategy injection logic.
     """
     
-    def __init__(self, llm_client: OllamaClient):
+    def __init__(self, llm_client: LLMProvider):
         self.llm = llm_client
 
     def _construct_system_prompt(self, context_data: dict[str, Any], content: ContentItem | None) -> str:
@@ -95,5 +95,5 @@ class TutorEngine:
         # Add current user message
         messages.append({"role": "user", "content": user_message})
         
-        response = await self.llm.generate_chat_completion(messages)
+        response = await self.llm.generate_chat(messages)
         return response

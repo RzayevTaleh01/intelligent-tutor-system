@@ -125,18 +125,18 @@ class GenericPlugin(LearningPlugin):
         # We need access to the LLM. 
         # In this architecture, Plugin doesn't hold the LLM instance directly. 
         # We should probably get it from context or instantiate a provider.
-        # For this refactor, let's instantiate OllamaProvider (stateless mostly) or passed in context.
+        # For this refactor, let's instantiate TogetherProvider (stateless mostly) or passed in context.
         # Let's assume it's passed in context or we create one.
         
-        from src.llm.providers.ollama import OllamaProvider
-        llm = OllamaProvider() # It reads config internally
+        from src.llm.providers.together_ai import TogetherProvider
+        llm = TogetherProvider() # It reads config internally
         
         try:
             # We ask for JSON format
             response_str = await llm.generate_chat([
                 {"role": "system", "content": system_prompt},
                 {"role": "user", "content": user_prompt}
-            ], options={"temperature": 0.1}) # Low temp for consistent grading
+            ], temperature=0.1) # Low temp for consistent grading
             
             # Parse JSON
             # LLM might be chatty, let's try to find JSON

@@ -1,6 +1,6 @@
 services:
   db:
-    image: postgres:15-alpine
+    image: pgvector/pgvector:pg16
     container_name: eduvision_db
     environment:
       POSTGRES_USER: postgres
@@ -21,9 +21,11 @@ services:
       - "8000:8000"
     environment:
       - DATABASE_URL=postgresql+asyncpg://postgres:password@db:5432/adaptive_core
-      - OLLAMA_HOST=http://host.docker.internal:11434
-      - OLLAMA_MODEL=llama3.1:8b
-      - SECRET_KEY=prod_secret_key_change_in_prod
+      - TOGETHER_API_KEY=${TOGETHER_API_KEY}
+      - TOGETHER_MODEL=${TOGETHER_MODEL}
+      - EMBEDDING_MODEL=${EMBEDDING_MODEL}
+      - SECRET_KEY=${SECRET_KEY}
+      - USE_LLM_FOR_SUMMARY=${USE_LLM_FOR_SUMMARY}
     depends_on:
       - db
     extra_hosts:

@@ -22,6 +22,25 @@ class KnowledgeEngine:
         self.embedder = EmbeddingService()
         self.graph_builder = TopicGraph()
 
+    async def ingest_text(self, text: str, filename: str, course_id: str | None = None) -> dict[str, Any]:
+        """Ingest raw text directly."""
+        return await self.ingest_file(filename, text.encode("utf-8"), course_id=course_id)
+
+    async def search(self, course_id: str, query: str, limit: int = 5) -> list[KnowledgeChunk]:
+        """Search for relevant chunks using vector similarity."""
+        query_vector = self.embedder.encode([query])[0]
+        # PGVector search query
+        stmt = select(KnowledgeChunk).join(KnowledgeEmbedding).order_by(
+            KnowledgeEmbedding.vector.l2_distance(query_vector)
+        ).limit(limit)
+        
+        # Filter by course_id if needed (requires join with KnowledgeSource)
+        if course_id:
+            stmt = stmt.join(KnowledgeSource).where(KnowledgeSource.course_id == course_id)
+            
+        result = await self.db.execute(stmt)
+        return result.scalars().all()
+
     async def ingest_file(
         self, 
         filename: str, 

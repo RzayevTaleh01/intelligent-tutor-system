@@ -17,8 +17,7 @@ from src.db.models_prod import Tenant, User
 from src.auth.utils import create_access_token, get_current_user, get_password_hash, verify_password, Token
 from src.core.runtime.rate_limit import rate_limiter
 from src.core.obs.metrics import metrics
-from src.llm.providers.ollama import OllamaProvider
-from src.llm.providers.mock import MockProvider
+from src.llm.providers.together_ai import TogetherProvider
 from src.config import get_settings
 
 # Core Engines
@@ -39,9 +38,8 @@ settings = get_settings()
 logger = logging.getLogger("eduvision.core")
 
 # LLM Factory
-ollama = OllamaProvider()
-mock_llm = MockProvider()
-active_llm = ollama # Default
+together_ai = TogetherProvider()
+active_llm = together_ai # Default
 
 # Engines
 pedagogy_engine = PedagogyEngine()
@@ -50,12 +48,14 @@ pedagogy_engine = PedagogyEngine()
 async def lifespan(app: FastAPI):
     # Startup logic
     global active_llm
-    if await ollama.check_health():
-        logger.info("Ollama is healthy. Using Primary LLM.")
-        active_llm = ollama
+    if await together_ai.check_health():
+        logger.info("Together AI is healthy. Using Primary LLM.")
+        active_llm = together_ai
     else:
-        logger.warning("Ollama unavailable. Switching to Mock Provider.")
-        active_llm = mock_llm
+        logger.error("Together AI unavailable! System cannot function without LLM.")
+        # We might want to raise an exception here or just log critical error
+        # raising error would prevent app startup which is safer for production
+        raise RuntimeError("Critical: LLM Provider Unavailable")
         
     # Register Default Plugin
     PluginRegistry.register("default", DefaultPlugin())
