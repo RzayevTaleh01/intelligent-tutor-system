@@ -60,11 +60,18 @@ async def lifespan(app: FastAPI):
     # Register Default Plugin
     PluginRegistry.register("default", DefaultPlugin())
     
+    from src.db.session import AsyncSessionLocal, engine
+    from src.db.base import Base
+
+    # Create tables (auto-migration for dev)
+    async with engine.begin() as conn:
+        await conn.run_sync(Base.metadata.create_all)
+
     # Load Courses from DB and register their plugins
     # Note: Using get_db() directly inside context manager is tricky because it yields.
     # We'll create a new session manually for startup.
-    from src.db.session import async_session_factory
-    async with async_session_factory() as session:
+    from src.db.session import AsyncSessionLocal
+    async with AsyncSessionLocal() as session:
         stmt = select(Course).where(Course.is_active == 1)
         res = await session.execute(stmt)
         courses = res.scalars().all()
@@ -331,3 +338,7 @@ async def get_job_status(job_id: str, current_user: User = Depends(get_current_u
 @app.get("/metrics")
 async def get_metrics():
     return metrics.get_prometheus_text()
+
+if __name__ == "__main__":
+    import uvicorn
+    uvicorn.run(app, host="0.0.0.0", port=8004)
