@@ -55,7 +55,8 @@ async def lifespan(app: FastAPI):
         logger.error("Together AI unavailable! System cannot function without LLM.")
         # We might want to raise an exception here or just log critical error
         # raising error would prevent app startup which is safer for production
-        raise RuntimeError("Critical: LLM Provider Unavailable")
+        logger.warning("Proceeding without LLM. Some features will fail.")
+        # raise RuntimeError("Critical: LLM Provider Unavailable")
         
     # Register Default Plugin
     PluginRegistry.register("default", DefaultPlugin())

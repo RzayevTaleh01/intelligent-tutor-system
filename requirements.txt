@@ -15,6 +15,9 @@ bcrypt
 sentence-transformers
 numpy
 scikit-learn
+gymnasium
+stable-baselines3
+shimmy
 
 # Voice
 faster-whisper

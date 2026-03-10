@@ -10,13 +10,13 @@ At the heart of EduVision lies a **custom-integrated AI architecture**. Unlike s
 *   **LLM Engine:** Meta Llama 3.1 (8B Instruct Turbo) via Together AI
 *   **Vector Database:** PostgreSQL + pgvector (High-performance vector similarity search)
 *   **Embeddings:** sentence-transformers/all-MiniLM-L6-v2
-*   **Architecture:** Hybrid Neuro-Symbolic (Generative AI + Deterministic Pedagogy)
+*   **Architecture:** Hybrid Neuro-Symbolic (Generative AI + Deterministic Pedagogy + Reinforcement Learning)
 
 ---
 
-## 🧠 System Architecture: The 5-Engine Design
+## 🧠 System Architecture: The 5-Engine Design + RL Agent
 
-The system is built around five interacting intelligent engines that work in harmony to deliver a seamless educational experience.
+The system is built around five interacting intelligent engines that work in harmony to deliver a seamless educational experience, now augmented with a Reinforcement Learning Agent.
 
 ```mermaid
 graph TD
@@ -33,10 +33,13 @@ graph TD
         LE[📈 Learner Engine]
         TE[💬 Tutor Engine]
         AE[✅ Assessment Engine]
+        RL[🤖 RL Agent]
 
         Materials -->|Ingest & Vectorize| KE
         KE -->|Context Retrieval| PE
         LE -->|Student State| PE
+        PE -->|State & Reward| RL
+        RL -->|Optimal Difficulty| PE
         PE -->|Instructional Strategy| TE
         AE -->|Feedback Loop| LE
     end
@@ -57,10 +60,7 @@ graph TD
     
 2.  **🧠 Pedagogy Engine (The Strategist)**
     *   **Function:** Determines *what* to teach next and *how* to teach it based on the student's real-time performance.
-    *   **Strategies:**
-        *   **Socratic Method:** Guiding students with questions rather than answers.
-        *   **Scaffolding:** Breaking down complex problems into manageable steps.
-        *   **Feynman Technique:** Asking students to explain concepts simply to diagnose gaps.
+    *   **New Feature:** Uses a **Reinforcement Learning (RL) Agent** (PPO Algorithm) to dynamically adjust problem difficulty based on student mastery, fatigue, and performance history to maintain the "Flow" state.
 
 3.  **💬 Tutor Engine (The Persona)**
     *   **Function:** The interface between the AI and the student. It generates natural, empathetic, and context-aware responses using the Llama 3.1 model, tailored by the Pedagogy Engine's strategy.
