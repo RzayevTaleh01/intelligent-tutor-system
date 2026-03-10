@@ -63,11 +63,13 @@ For each skill $k$, we track the probability $P(L_k)$ that the learner has maste
 When a student answers, we first calculate the posterior probability $P(L_t | Observation)$:
 
 *   If Correct:
+    
     $$
     P(L_t | Correct) = \frac{P(L_t) \cdot (1 - P(S))}{P(L_t) \cdot (1 - P(S)) + (1 - P(L_t)) \cdot P(G)}
     $$
 
 *   If Incorrect:
+    
     $$
     P(L_t | Incorrect) = \frac{P(L_t) \cdot P(S)}{P(L_t) \cdot P(S) + (1 - P(L_t)) \cdot (1 - P(G))}
     $$
