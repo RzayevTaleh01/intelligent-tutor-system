@@ -1,166 +1,123 @@
 ---
 sidebar_position: 1
-title: Introduction
+title: Research Overview
 slug: /
 ---
 
-# ITS - Intelligent Tutoring System
+# EduVision: A Neuro-Symbolic Adaptive Intelligent Tutoring System
 
-
-**ITS (Intelligent Tutoring System)** is a comprehensive, adaptive educational ecosystem designed to simulate a one-on-one tutoring experience.
-
-
-## AI Model & Technology
-At the core of ITS lies a **custom-built, trainable AI model**. Unlike generic wrappers, this system utilizes a fine-tuned version of **Llama 3.1 (8B)**, optimized specifically for pedagogical dialogue and educational scaffolding.
-- **Model:** Llama 3.1 8B (Fine-tuned on educational datasets)
-- **Embedding:** sentence-transformers/all-MiniLM-L6-v2 (for RAG and Knowledge Graph)
-- **Architecture:** Hybrid Neuro-Symbolic (combines LLM generation with structured Knowledge Graphs)
-
-The system empowers **Teachers** to upload raw materials (Lessons, Challenges, Rubrics), which the system's "Brain" then processes to drive an adaptive learning journey for the **Student**.
+**Author:** Taleh Rzayev  
+**Research Domain:** Artificial Intelligence in Education (AIED)  
+**System Version:** 2.0 (Research Edition)
 
 ---
 
-## Architecture & Core Engines
+## 1. Abstract
 
-The system is built around five interacting intelligent engines that work together to deliver personalized education.
+The democratization of personalized education remains one of the grand challenges of the 21st century. While traditional **Intelligent Tutoring Systems (ITS)** offer structured learning paths, they lack the conversational flexibility of human tutors. Conversely, modern **Large Language Models (LLMs)** provide fluency but suffer from hallucinations and a lack of pedagogical strategy.
 
-### System Architecture Diagram
+**EduVision** proposes a novel **Neuro-Symbolic Architecture** that bridges this gap. By orchestrating a Generative AI (Llama 3.1) within a deterministic framework of **Bayesian Knowledge Tracing (BKT)** and **Deep Reinforcement Learning (RL)**, EduVision creates an adaptive learning environment that is both pedagogically sound and conversationally engaging. This documentation outlines the system's theoretical foundations, architectural design, and technical implementation.
+
+---
+
+## 2. Research Methodology
+
+Our approach integrates three distinct fields of study to create a cohesive tutoring experience.
+
+### 2.1. Cognitive Science: The Zone of Proximal Development
+Drawing from Vygotsky's theory, EduVision aims to keep the learner in their **Zone of Proximal Development (ZPD)**—the sweet spot between what a learner can do unaided and what they can't do at all.
+
+*   **Implementation:** We employ a **Proximal Policy Optimization (PPO)** Reinforcement Learning agent.
+*   **State Space:** The agent observes the learner's `Mastery Score`, `Response Latency`, and `Error Rate`.
+*   **Action Space:** The agent dynamically adjusts the **Difficulty Parameter ($\beta$)** of the next problem.
+*   **Reward Signal:** The agent is rewarded for keeping the learner in a "Flow State" (high accuracy at appropriate difficulty).
+
+### 2.2. Psychometrics: Bayesian Knowledge Tracing (BKT)
+To model the "invisible" state of a learner's knowledge, we utilize **BKT**, a Hidden Markov Model.
+
+$$ P(L_{t+1}) = P(L_t) \cdot (1 - P(S)) + (1 - P(L_t)) \cdot P(T) $$
+
+Where:
+*   $P(L_t)$: Probability the skill is known at step $t$.
+*   $P(S)$: Slip probability (knowing but erring).
+*   $P(T)$: Transition probability (learning).
+
+### 2.3. AI Alignment: Retrieval-Augmented Generation (RAG)
+To prevent LLM hallucinations, all pedagogical responses are grounded in a verified **Knowledge Graph**. The system retrieves semantic chunks from uploaded textbooks before generating a response, ensuring factual accuracy.
+
+---
+
+## 3. System Architecture: The 5-Engine Design
+
+EduVision is not a monolith but a distributed system of five specialized "Intelligent Engines."
 
 ```mermaid
 graph TD
-    subgraph "Instructor Zone"
-        Teacher([👩‍🏫 Teacher])
-        Materials[/📄 Lessons & Rubrics/]
-        Teacher -->|Uploads| Materials
-    end
-
-    subgraph "ITS Core (The AI Brain)"
-        direction TB
+    subgraph "The Brain (EduVision Core)"
         KE[🗂️ Knowledge Engine]
         PE[🧠 Pedagogy Engine]
         LE[📈 Learner Engine]
         TE[💬 Tutor Engine]
         AE[✅ Assessment Engine]
-
-        Materials -->|Ingest| KE
-        KE -->|Context| PE
-        LE -->|State| PE
-        PE -->|Strategy| TE
-        AE -->|Feedback| LE
+        
+        RL[🤖 RL Agent (PPO)]
+        BKT[📊 BKT Model]
     end
 
-    subgraph "Domain Layer"
-        PluginInterface[[🔌 Plugin Interface]]
-        Subjects["📚 Subject Plugins<br/>(Python, Math, History...)"]
-        PluginInterface --- Subjects
-    end
-
-    subgraph "Student Zone"
-        Student([👨‍🎓 Student])
-    end
-
-    %% Wiring
-    PE -->|Directs| PluginInterface
-    AE -->|Evaluates| PluginInterface
-    
-    TE <-->|Chat & Hints| Student
-    Student -->|Attempts| AE
+    User([👨‍🎓 Learner]) <-->|Natural Language| TE
+    TE <-->|Context| KE
+    User -->|Submission| AE
+    AE -->|Grade| LE
+    LE -->|State Update| BKT
+    BKT -->|Mastery Prob| PE
+    PE <-->|Reward/Action| RL
+    PE -->|Strategy| TE
 ```
 
----
+### 3.1. 🗂️ Knowledge Engine
+*   **Function:** Ingests educational content (PDF/Text), chunks it, and creates vector embeddings (`sentence-transformers/all-MiniLM-L6-v2`).
+*   **Storage:** `pgvector` (PostgreSQL) for high-performance similarity search.
 
-## Engine Descriptions
+### 3.2. 🧠 Pedagogy Engine (The Strategist)
+*   **Function:** The central decision-maker. It uses the **RL Agent** to determine the optimal next step (e.g., "Increase Difficulty", "Review Prerequisite", "Explain Concept").
+*   **Novelty:** Replaces static "if-then" rules with a trained neural policy.
 
-1.  **🗂️ Knowledge Engine**
-    *   **Role:** The librarian and map-maker.
-    *   **Function:** Ingests raw materials (PDFs, text), chunks them into learnable units, and builds a **Knowledge Graph** linking concepts together.
+### 3.3. 💬 Tutor Engine (The Persona)
+*   **Function:** The interface layer. It uses **Meta Llama 3.1 (8B)** via Together AI to generate empathetic, Socratic dialogue based on the Pedagogy Engine's instructions.
 
-2.  **🧠 Pedagogy Engine**
-    *   **Role:** The strategist.
-    *   **Function:** Decides *what* to teach next and *how* to teach it based on the student's current state. It balances challenge and skill (Vygotsky's Zone of Proximal Development).
-    *   **Adaptive Strategies (New v2.1):**
-        *   **Socratic Method:** Asks guiding questions instead of giving answers (for advanced learners).
-        *   **Feynman Technique:** Requests simple explanations to diagnose conceptual gaps.
-        *   **Scaffolding:** Breaks down complex problems into smaller steps with hints (for stuck learners).
+### 3.4. 📈 Learner Engine (The Memory)
+*   **Function:** Maintains the persistent state of the learner, tracking mastery probabilities across the Knowledge Graph.
 
-3.  **💬 Tutor Engine**
-    *   **Role:** The conversationalist.
-    *   **Function:** Generates natural language explanations, hints, and encouragement using LLMs (e.g., Llama 3). It adapts the tone and depth of explanation.
-
-4.  **📈 Learner Engine**
-    *   **Role:** The memory.
-    *   **Function:** Tracks the student's "Mastery Score" for every skill, records activity history, and calculates readiness for new topics.
-
-5.  **✅ Assessment Engine**
-    *   **Role:** The grader.
-    *   **Function:** Automatically evaluates student answers (code, text, or multiple choice), identifies specific error types, and provides immediate feedback.
+### 3.5. ✅ Assessment Engine (The Critic)
+*   **Function:** Evaluates learner inputs against ground-truth rubrics using a hybrid Rule-Based + LLM approach.
 
 ---
 
-## Key Features
+## 4. Evaluation Metrics
 
-### 1. Dynamic Course Creation
-Courses are created dynamically via API. The **Domain Plugin Layer** ensures the system can switch "brains" instantly:
-- **Endpoint:** `POST /courses/`
-- **Examples:** "Python 101", "History of Art", "Quantum Physics".
+To validate the efficacy of EduVision, we track the following key performance indicators (KPIs):
 
-### 2. Universal Learning Module (`GenericPlugin`)
-This module acts as the default adapter for new subjects. It uses the **Knowledge Engine** to perform RAG (Retrieval-Augmented Generation) on uploaded materials, allowing the system to teach subjects it wasn't explicitly programmed for.
-
----
-
-## How to Run
-
-### 1. Start the System
-Use Docker to launch the entire stack (DB, API, AI):
-
-```bash
-docker-compose up -d --build
-```
-
-### 2. Manual API Usage (Swagger UI)
-Access the interactive API documentation at `http://localhost:8000/docs`.
-
-1. **Authorize** (Login).
-2. `POST /courses/` -> Create a new course.
-3. `POST /courses/{id}/upload` -> Upload learning materials.
-4. `POST /sessions/` -> Start a session with the Course ID.
-5. `POST /chat/` -> Interact with the AI Tutor.
+| Metric Categories | Specific Metrics | Goal |
+| :--- | :--- | :--- |
+| **Pedagogical** | **Learning Gain** | Rate of mastery increase per session. |
+| | **Retention Rate** | Performance on delayed post-tests (SRS intervals). |
+| **Technical** | **Inference Latency** | Time to generate a Tutor response (< 2s). |
+| | **RAG Precision** | Relevance of retrieved knowledge chunks. |
+| **Engagement** | **Session Duration** | Average time spent learning per login. |
+| | **Flow Ratio** | % of time spent in the ZPD (optimal difficulty). |
 
 ---
 
-## Version History & Changelog
+## 5. Technical Implementation Overview
 
-<details open>
-<summary><strong>🚀 v2.1: Cognitive Intelligence Update (Current)</strong></summary>
+*   **Backend:** FastAPI (Async Python)
+*   **Database:** PostgreSQL 16 (Relational + Vector)
+*   **AI Inference:** Together AI (Serverless LLM)
+*   **ML Framework:** PyTorch + Stable-Baselines3 (RL)
+*   **Infrastructure:** Docker & Docker Compose
 
-*   **🧠 Pedagogy Engine Upgrade:**
-    *   Added **Socratic Method** (Guided questioning for advanced learners).
-    *   Added **Feynman Technique** (Conceptual gap diagnosis).
-    *   Added **Scaffolding** (Step-by-step breakdown for stuck students).
-*   **✅ Assessment Engine Upgrade:**
-    *   Implemented **AI Grading** using Llama 3.1.
-    *   Provides detailed JSON feedback with scores (accuracy, relevance, depth).
-*   **🧪 Verification:** Added specific test scripts for Pedagogy strategies and Assessment logic.
-</details>
-
-<details>
-<summary><strong>🏗️ v2.0: Core Architecture Overhaul</strong></summary>
-
-*   **5-Engine Architecture:** Defined the core interaction between Knowledge, Pedagogy, Tutor, Learner, and Assessment engines.
-*   **RAG Integration:** Implemented Knowledge Graph and Vector Search for dynamic content retrieval.
-*   **Plugin System:** Created `GenericPlugin` to allow any subject material to be taught without code changes.
-*   **Dockerization:** Full container support for Database, API, and LLM services.
-</details>
-
-<details>
-<summary><strong>🌱 v1.0: Initial Prototype</strong></summary>
-
-*   Basic Chat Interface.
-*   Simple Authentication (JWT).
-*   Static Rule-based responses.
-*   Proof of Concept for ITS.
-</details>
+For detailed technical setup and API documentation, please refer to the **[Technical Guide](./technical/intro)**.
 
 ---
 
+*© 2026 EduVision Project. Created by Taleh Rzayev for PhD Research.*
