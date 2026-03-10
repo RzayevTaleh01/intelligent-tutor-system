@@ -35,7 +35,9 @@ The agent outputs a discrete action $A_t \in \{0, 1, 2\}$:
 #### Reward Function
 The reward $R_t$ is designed to maximize long-term learning gain while maintaining engagement:
 
-$$ R_t = \alpha (m_{t+1} - m_t) + \beta \cdot \mathbb{I}(Flow) - \gamma \cdot f_t $$
+$$
+R_t = \alpha (m_{t+1} - m_t) + \beta \cdot \mathbb{I}(Flow) - \gamma \cdot f_t
+$$
 
 Where:
 *   $(m_{t+1} - m_t)$ is the mastery gain.
@@ -61,13 +63,19 @@ For each skill $k$, we track the probability $P(L_k)$ that the learner has maste
 When a student answers, we first calculate the posterior probability $P(L_t | Observation)$:
 
 *   If Correct:
-    $$ P(L_t | Correct) = \frac{P(L_t) \cdot (1 - P(S))}{P(L_t) \cdot (1 - P(S)) + (1 - P(L_t)) \cdot P(G)} $$
+    $$
+    P(L_t | Correct) = \frac{P(L_t) \cdot (1 - P(S))}{P(L_t) \cdot (1 - P(S)) + (1 - P(L_t)) \cdot P(G)}
+    $$
 
 *   If Incorrect:
-    $$ P(L_t | Incorrect) = \frac{P(L_t) \cdot P(S)}{P(L_t) \cdot P(S) + (1 - P(L_t)) \cdot (1 - P(G))} $$
+    $$
+    P(L_t | Incorrect) = \frac{P(L_t) \cdot P(S)}{P(L_t) \cdot P(S) + (1 - P(L_t)) \cdot (1 - P(G))}
+    $$
 
 Then, we account for the possibility of learning:
-$$ P(L_{t+1}) = P(L_t | Obs) + (1 - P(L_t | Obs)) \cdot P(T) $$
+$$
+P(L_{t+1}) = P(L_t | Obs) + (1 - P(L_t | Obs)) \cdot P(T)
+$$
 
 ---
 
@@ -82,7 +90,9 @@ All educational content (textbooks, PDFs) is chunked into 512-token segments and
 When a student asks a question, the system:
 1.  Embeds the query $q$.
 2.  Performs a Cosine Similarity search in the vector database:
-    $$ Similarity(A, B) = \frac{A \cdot B}{\|A\| \|B\|} $$
+    $$
+Similarity(A, B) = \frac{A \cdot B}{\|A\| \|B\|}
+$$
 3.  Retrieves the top-$k$ most relevant chunks.
 4.  Injects these chunks into the LLM's system prompt as "Context".
 
