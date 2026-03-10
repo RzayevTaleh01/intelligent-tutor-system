@@ -60,19 +60,19 @@ For each skill $k$, we track the probability $P(L_k)$ that the learner has maste
 *   $P(S)$: **Slip** probability (Answering incorrectly despite knowing).
 
 **Update Rule:**
-When a student answers, we first calculate the posterior probability $P(L_t | Observation)$:
+When a student answers, we first calculate the posterior probability $P(L_t | Observation)$.
 
-*   If Correct:
+If **Correct**:
 
-    $$
-    P(L_t | Correct) = \frac{P(L_t) \cdot (1 - P(S))}{P(L_t) \cdot (1 - P(S)) + (1 - P(L_t)) \cdot P(G)}
-    $$
+$$
+P(L_t | Correct) = \frac{P(L_t) \cdot (1 - P(S))}{P(L_t) \cdot (1 - P(S)) + (1 - P(L_t)) \cdot P(G)}
+$$
 
-*   If Incorrect:
+If **Incorrect**:
 
-    $$
-    P(L_t | Incorrect) = \frac{P(L_t) \cdot P(S)}{P(L_t) \cdot P(S) + (1 - P(L_t)) \cdot (1 - P(G))}
-    $$
+$$
+P(L_t | Incorrect) = \frac{P(L_t) \cdot P(S)}{P(L_t) \cdot P(S) + (1 - P(L_t)) \cdot (1 - P(G))}
+$$
 
 Then, we account for the possibility of learning:
 $$
