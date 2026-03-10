@@ -226,7 +226,8 @@ async def chat(
     # Context data for Tutor Engine
     context_data = {
         "strategy": plan["chosen_action"],
-        "mastery_score": state.mastery_score
+        "mastery_score": state.mastery_score,
+        "rl_info": plan.get("rl_info", {})
     }
     
     # History Mock (Ideally fetch from DB)
@@ -248,6 +249,7 @@ async def chat(
     return {
         "reply": reply, 
         "next_step": plan["chosen_action"],
+        "rl_decision": plan.get("rl_info", {}),
         "content_id": content_item.content_id
     }
 

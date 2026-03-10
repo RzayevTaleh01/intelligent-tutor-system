@@ -1,4 +1,4 @@
-from sqlalchemy import Column, String, Integer, Float, ForeignKey, DateTime, JSON, Text, func, Boolean
+from sqlalchemy import Column, String, Integer, Float, ForeignKey, DateTime, JSON, Text, func, Boolean, Index
 from sqlalchemy.orm import relationship
 from src.db.base import Base
 
@@ -16,12 +16,17 @@ class User(Base):
     __tablename__ = "users"
     id = Column(Integer, primary_key=True, autoincrement=True)
     tenant_id = Column(String, ForeignKey("tenants.id"), nullable=False)
-    email = Column(String, nullable=False) # Unique constraint per tenant handled via logic or composite index
+    email = Column(String, nullable=False) 
     password_hash = Column(String, nullable=False)
     role = Column(String, default="student") # admin, teacher, student
     created_at = Column(DateTime(timezone=True), server_default=func.now())
     
     sessions = relationship("Session", backref="user", cascade="all, delete-orphan")
+    
+    # Composite Index for faster login lookups
+    __table_args__ = (
+        Index('ix_users_email_tenant', 'email', 'tenant_id', unique=True),
+    )
 
 # --- Background Jobs ---
 

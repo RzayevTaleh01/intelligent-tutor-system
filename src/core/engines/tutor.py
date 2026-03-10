@@ -15,8 +15,16 @@ class TutorEngine:
         self.llm = llm_client
 
     def _construct_system_prompt(self, context_data: dict[str, Any], content: ContentItem | None) -> str:
-        strategy = context_data.get('strategy', 'standard')
+        # Extract strategy safely (handle dict or str)
+        raw_strategy = context_data.get('strategy', 'standard')
+        if isinstance(raw_strategy, dict):
+            # If strategy is a dict (e.g. from RL), use 'source' or a default key
+            strategy = raw_strategy.get('source', 'standard')
+        else:
+            strategy = str(raw_strategy)
+
         mastery = context_data.get('mastery_score', 0.5)
+        rl_info = context_data.get('rl_info', {})
         
         domain = content.metadata.get('domain', 'General Learning') if content else "General Learning"
         content_text = content.text if content else "No specific lesson content provided. Answer based on general knowledge."
@@ -30,6 +38,9 @@ class TutorEngine:
         - Mastery Level: {mastery:.2f}
         - Current Strategy: {strategy}
         """
+        
+        if rl_info:
+             base_prompt += f"\n- RL Agent Suggestion: {rl_info.get('desc', 'None')}\n"
         
         # Strategy-specific instructions map (could be moved to config/yaml)
         strategies = {
@@ -87,10 +98,16 @@ class TutorEngine:
         messages = [{"role": "system", "content": system_prompt}]
         
         # Add last N messages from history for context
-        # Limit history to prevent context window overflow
-        # Filter out system messages from history if they exist
-        clean_history = [msg for msg in history if msg.get("role") in ("user", "assistant")]
-        messages.extend(clean_history[-settings.VECTOR_SEARCH_LIMIT:]) # Using search limit as a heuristic for history length for now
+        if history:
+             # Ensure history elements are dicts and have 'role' and 'content'
+             clean_history = [
+                 {"role": msg.get("role"), "content": msg.get("content")} 
+                 for msg in history 
+                 if isinstance(msg, dict) and msg.get("role") in ("user", "assistant")
+             ]
+             # Assuming settings.VECTOR_SEARCH_LIMIT is available, otherwise default to 5
+             limit = getattr(settings, 'VECTOR_SEARCH_LIMIT', 5)
+             messages.extend(clean_history[-limit:])
         
         # Add current user message
         messages.append({"role": "user", "content": user_message})

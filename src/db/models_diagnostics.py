@@ -1,4 +1,4 @@
-from sqlalchemy import Column, String, Integer, Float, ForeignKey, DateTime, JSON, Text, func
+from sqlalchemy import Column, String, Integer, Float, ForeignKey, DateTime, JSON, Text, func, Index
 from sqlalchemy.orm import relationship
 from src.db.base import Base
 
@@ -22,6 +22,8 @@ class LearnerTheta(Base):
     session_id = Column(String, ForeignKey("sessions.id"), nullable=False)
     theta_overall = Column(Float, default=0.0)
     updated_at = Column(DateTime(timezone=True), server_default=func.now(), onupdate=func.now())
+    
+    __table_args__ = (Index('ix_learner_theta_session', 'session_id'),)
 
 class LearnerThetaSkill(Base):
     __tablename__ = "learner_theta_skill"
@@ -30,6 +32,8 @@ class LearnerThetaSkill(Base):
     skill_tag = Column(String, nullable=False)
     theta = Column(Float, default=0.0)
     updated_at = Column(DateTime(timezone=True), server_default=func.now(), onupdate=func.now())
+    
+    __table_args__ = (Index('ix_learner_theta_skill_lookup', 'session_id', 'skill_tag'),)
 
 class SkillDifficulty(Base):
     __tablename__ = "skill_difficulty"
@@ -38,6 +42,8 @@ class SkillDifficulty(Base):
     item_type = Column(String, nullable=False) # e.g. "mcq", "vocab_fill"
     b = Column(Float, default=0.0) # Difficulty parameter
     updated_at = Column(DateTime(timezone=True), server_default=func.now(), onupdate=func.now())
+    
+    __table_args__ = (Index('ix_skill_difficulty_lookup', 'skill_tag', 'item_type'),)
 
 # Bandit Optimizer
 class BanditArm(Base):

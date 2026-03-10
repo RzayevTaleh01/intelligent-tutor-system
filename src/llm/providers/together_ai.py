@@ -37,18 +37,19 @@ class TogetherProvider(LLMProvider):
         payload = {k: v for k, v in payload.items() if v is not None}
 
         try:
-            async with httpx.AsyncClient(timeout=60.0) as client:
+            # Increased timeout to 120 seconds for production resilience
+            async with httpx.AsyncClient(timeout=120.0) as client:
                 response = await client.post(url, json=payload, headers=self.headers)
                 response.raise_for_status()
                 data = response.json()
                 if "choices" in data:
                     return data["choices"][0]["message"]["content"]
                 elif "error" in data:
-                     logger.error(f"Together AI API Error: {data['error']}")
-                     raise Exception(f"Together AI API Error: {data['error']}")
+                    logger.error(f"Together AI API Error: {data['error']}")
+                    raise Exception(f"Together AI API Error: {data['error']}")
                 else:
-                     logger.error(f"Unexpected response format: {data}")
-                     raise Exception(f"Unexpected response format: {data}")
+                    logger.error(f"Unexpected response format: {data}")
+                    raise Exception(f"Unexpected response format: {data}")
 
         except httpx.HTTPStatusError as e:
             logger.error(f"Together AI HTTP Error: {e.response.text}")

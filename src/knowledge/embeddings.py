@@ -5,9 +5,13 @@ import torch
 
 class EmbeddingService:
     def __init__(self, model_name="sentence-transformers/all-MiniLM-L6-v2"):
+        # Determine device
+        self.device = "cuda" if torch.cuda.is_available() else "mps" if torch.backends.mps.is_available() else "cpu"
+        print(f"🔥 Embedding Service using device: {self.device}")
+        
         # Load model (lazy load in real prod, but eager here for simplicity)
         try:
-            self.model = SentenceTransformer(model_name)
+            self.model = SentenceTransformer(model_name, device=self.device)
             self.dim = self.model.get_sentence_embedding_dimension()
             self.available = True
         except Exception as e:

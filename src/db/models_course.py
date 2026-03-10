@@ -1,4 +1,4 @@
-from sqlalchemy import Column, String, Integer, DateTime, JSON, ForeignKey, func
+from sqlalchemy import Column, String, Integer, DateTime, JSON, ForeignKey, func, Index
 from sqlalchemy.orm import relationship
 from src.db.base import Base
 
@@ -19,3 +19,5 @@ class Course(Base):
     # Relationships
     knowledge_sources = relationship("KnowledgeSource", back_populates="course", cascade="all, delete-orphan")
     sessions = relationship("Session", back_populates="course")
+    
+    __table_args__ = (Index('ix_courses_tenant', 'tenant_id'),)

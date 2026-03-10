@@ -1,4 +1,4 @@
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, timezone
 from typing import Optional, Dict
 from jose import jwt, JWTError
 from passlib.context import CryptContext
@@ -14,11 +14,12 @@ from src.config import get_settings
 settings = get_settings()
 
 # Config
-SECRET_KEY = getattr(settings, "SECRET_KEY", "insecure_dev_secret_key_change_me")
+SECRET_KEY = settings.SECRET_KEY if hasattr(settings, "SECRET_KEY") else "insecure_dev_secret_key_change_me"
 ALGORITHM = "HS256"
 ACCESS_TOKEN_EXPIRE_MINUTES = 60 * 24 # 1 day
 
-# Fix for bcrypt > 4.0.0 and passlib
+# Password Hashing
+# Fix for bcrypt > 4.0.0 and passlib compatibility
 import bcrypt
 # Add this monkeypatch for passlib compatibility with newer bcrypt
 if not hasattr(bcrypt, '__about__'):
@@ -26,12 +27,7 @@ if not hasattr(bcrypt, '__about__'):
         __version__ = bcrypt.__version__
     bcrypt.__about__ = About()
 
-# Use 'django_pbkdf2_sha256' or similar if bcrypt issues persist, but sticking to bcrypt with workaround
-# Or just handle the 72 byte limit if that's the only issue remaining
-# The error "password cannot be longer than 72 bytes" is specific to bcrypt limitation.
-# We can pre-hash or just truncate if acceptable (not ideal for prod but ok for smoke test)
-# Better: Use 'pbkdf2_sha256' which is standard in passlib and has no length limit
-
+# Use pbkdf2_sha256 which is more robust and has no 72-byte limit like bcrypt
 pwd_context = CryptContext(schemes=["pbkdf2_sha256"], deprecated="auto")
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="v2/auth/login")
 
@@ -54,9 +50,9 @@ def get_password_hash(password):
 def create_access_token(data: dict, expires_delta: Optional[timedelta] = None):
     to_encode = data.copy()
     if expires_delta:
-        expire = datetime.utcnow() + expires_delta
+        expire = datetime.now(timezone.utc) + expires_delta
     else:
-        expire = datetime.utcnow() + timedelta(minutes=15)
+        expire = datetime.now(timezone.utc) + timedelta(minutes=15)
     to_encode.update({"exp": expire})
     encoded_jwt = jwt.encode(to_encode, SECRET_KEY, algorithm=ALGORITHM)
     return encoded_jwt
@@ -70,14 +66,32 @@ async def get_current_user(token: str = Depends(oauth2_scheme), db: AsyncSession
     try:
         payload = jwt.decode(token, SECRET_KEY, algorithms=[ALGORITHM])
         username: str = payload.get("sub")
+        # In a real JWT, custom claims might be at root or under a namespace
+        # Adjust based on how we create token. We pass `data` to create_access_token.
+        # Assuming we put username in 'sub' and others as direct keys
         tenant_id: str = payload.get("tenant_id")
-        if username is None or tenant_id is None:
-            raise credentials_exception
-        token_data = TokenData(username=username, tenant_id=tenant_id, role=payload.get("role"), user_id=payload.get("user_id"))
+        
+        if username is None:
+             raise credentials_exception
+             
+        token_data = TokenData(
+            username=username, 
+            tenant_id=tenant_id, 
+            role=payload.get("role"), 
+            user_id=payload.get("user_id")
+        )
     except JWTError:
         raise credentials_exception
         
-    stmt = select(User).where(User.email == token_data.username, User.tenant_id == token_data.tenant_id)
+    # If we have user_id, use that for faster lookup
+    if token_data.user_id:
+        stmt = select(User).where(User.id == token_data.user_id)
+    else:
+        # Fallback to email/tenant
+        stmt = select(User).where(User.email == token_data.username)
+        if token_data.tenant_id:
+            stmt = stmt.where(User.tenant_id == token_data.tenant_id)
+            
     result = await db.execute(stmt)
     user = result.scalar_one_or_none()
     

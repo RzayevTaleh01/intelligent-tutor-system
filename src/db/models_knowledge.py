@@ -1,20 +1,20 @@
-from sqlalchemy import Column, String, Integer, Float, ForeignKey, JSON, LargeBinary, Text
+from sqlalchemy import Column, String, Integer, Float, ForeignKey, JSON, LargeBinary, Text, Index
 from sqlalchemy.orm import relationship
 from src.db.base import Base
-# from src.db.models_course import Course (Imported at runtime to avoid circular)
-
 
 class KnowledgeSource(Base):
     __tablename__ = "knowledge_sources"
     
     id = Column(String, primary_key=True)
-    course_id = Column(String, ForeignKey("courses.id"), nullable=True) # Added for Course Context
+    course_id = Column(String, ForeignKey("courses.id"), nullable=True) 
     filename = Column(String, nullable=False)
     filetype = Column(String, nullable=False)
     created_at = Column(Float, nullable=False)
     
     chunks = relationship("KnowledgeChunk", back_populates="source", cascade="all, delete-orphan")
     course = relationship("Course", back_populates="knowledge_sources")
+    
+    __table_args__ = (Index('ix_knowledge_sources_course', 'course_id'),)
 
 class KnowledgeChunk(Base):
     __tablename__ = "knowledge_chunks"
@@ -27,6 +27,8 @@ class KnowledgeChunk(Base):
     
     source = relationship("KnowledgeSource", back_populates="chunks")
     embedding = relationship("KnowledgeEmbedding", uselist=False, back_populates="chunk", cascade="all, delete-orphan")
+    
+    __table_args__ = (Index('ix_knowledge_chunks_source', 'source_id'),)
 
 class KnowledgeEmbedding(Base):
     __tablename__ = "knowledge_embeddings"

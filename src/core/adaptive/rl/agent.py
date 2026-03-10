@@ -4,6 +4,8 @@ from stable_baselines3 import PPO
 from stable_baselines3.common.env_util import make_vec_env
 from src.core.adaptive.rl.env import EduVisionEnv
 
+import torch
+
 MODEL_PATH = "models/rl/ppo_pedagogy_v1"
 
 class RLAgent:
@@ -11,20 +13,24 @@ class RLAgent:
         self.model = None
         self.env = None
         
+        # Determine device
+        self.device = "cuda" if torch.cuda.is_available() else "mps" if torch.backends.mps.is_available() else "cpu"
+        print(f"🔥 RL Agent using device: {self.device}")
+        
         if training_mode:
             self.env = make_vec_env(lambda: EduVisionEnv(), n_envs=4)
         
         # Load existing model if available
         if os.path.exists(f"{MODEL_PATH}.zip"):
             try:
-                self.model = PPO.load(MODEL_PATH)
+                self.model = PPO.load(MODEL_PATH, device=self.device)
                 print(f"Loaded RL model from {MODEL_PATH}")
             except Exception as e:
                 print(f"Failed to load model: {e}")
         
         if self.model is None and training_mode:
             print("Initializing new PPO model...")
-            self.model = PPO("MlpPolicy", self.env, verbose=1)
+            self.model = PPO("MlpPolicy", self.env, verbose=1, device=self.device)
 
     def train(self, total_timesteps=10000):
         if self.model is None:

@@ -1,4 +1,4 @@
-from sqlalchemy import Column, String, Integer, Float, ForeignKey, DateTime, JSON, Text, func
+from sqlalchemy import Column, String, Integer, Float, ForeignKey, DateTime, JSON, Text, func, Index
 from sqlalchemy.orm import relationship
 from src.db.base import Base
 
@@ -16,6 +16,8 @@ class LearnerSkill(Base):
     p_guess = Column(Float, default=0.2)   # Guess probability
     
     last_updated = Column(DateTime(timezone=True), server_default=func.now(), onupdate=func.now())
+    
+    __table_args__ = (Index('ix_learner_skills_lookup', 'session_id', 'skill_tag'),)
 
 class LearnerSchedule(Base):
     __tablename__ = "learner_schedule"
@@ -28,6 +30,8 @@ class LearnerSchedule(Base):
     interval_days = Column(Float, default=1.0)
     ease = Column(Float, default=2.5) # SM-2 ease factor
     repetitions = Column(Integer, default=0)
+    
+    __table_args__ = (Index('ix_learner_schedule_lookup', 'session_id', 'skill_tag'),)
 
 class LearnerError(Base):
     __tablename__ = "learner_errors"
@@ -39,6 +43,8 @@ class LearnerError(Base):
     
     count = Column(Integer, default=1)
     last_seen = Column(DateTime(timezone=True), server_default=func.now(), onupdate=func.now())
+    
+    __table_args__ = (Index('ix_learner_errors_lookup', 'session_id', 'skill_tag', 'error_code'),)
 
 class AnalyticsEvent(Base):
     __tablename__ = "analytics_events"
@@ -48,3 +54,5 @@ class AnalyticsEvent(Base):
     event_type = Column(String, nullable=False)
     payload_json = Column(JSON, nullable=True)
     created_at = Column(DateTime(timezone=True), server_default=func.now())
+    
+    __table_args__ = (Index('ix_analytics_events_session', 'session_id'),)
