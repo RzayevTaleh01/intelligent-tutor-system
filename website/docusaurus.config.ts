@@ -26,8 +26,12 @@ const config: Config = {
   organizationName: 'RzayevTaleh01', // Usually your GitHub org/user name.
   projectName: 'intelligent-tutor-system', // Usually your repo name.
 
-  onBrokenLinks: 'warn', 
-  onBrokenMarkdownLinks: 'warn',
+  onBrokenLinks: 'warn',
+  markdown: {
+    hooks: {
+      onBrokenMarkdownLinks: 'warn',
+    },
+  },
 
   // Even if you don't use internationalization, you can use this field to set
   // useful metadata like html lang. For example, if your site is Chinese, you
